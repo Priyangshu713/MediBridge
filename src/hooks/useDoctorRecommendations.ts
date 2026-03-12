@@ -1,9 +1,8 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { HealthData } from '../types/health';
 import { Doctor } from '../types/doctor';
-import { sampleDoctors } from '../data/sampleDoctors';
 import { useHealthStore } from '../store/healthStore';
 
 interface DoctorFilters {
@@ -22,12 +21,14 @@ export function useDoctorRecommendations(filters: DoctorFilters) {
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // Keep a ref to all fetched doctors for recommendations fallback
+  const allDoctorsRef = useRef<Doctor[]>([]);
+
   // Get all doctors with filters
   useEffect(() => {
     const fetchDoctors = async () => {
       setIsLoadingDoctors(true);
       try {
-        // Simulate API call delay
         const response = await fetch(`${API_URL}/auth/getAlldoctor`, {
           method: 'GET',
           headers: {
@@ -35,17 +36,17 @@ export function useDoctorRecommendations(filters: DoctorFilters) {
           },
         });
         const data = await response.json();
-        console.log(data.allDoctor);
+        const allDoctors: Doctor[] = data.allDoctor || [];
 
-        // Apply filters to sample doctors
-        let getAllDoctors = JSON.stringify(data.allDoctor);
+        // Store all doctors for recommendation fallback
+        allDoctorsRef.current = allDoctors;
 
-        localStorage.setItem('allDoctor', getAllDoctors);
-        let filteredDoctors = JSON.parse(localStorage.getItem("allDoctor"));
+        // Apply filters
+        let filteredDoctors = [...allDoctors];
 
         if (filters.specialty) {
           filteredDoctors = filteredDoctors.filter(doctor =>
-            doctor.specialty.toLowerCase() === filters.specialty.toLowerCase() ||
+            doctor.specialty?.toLowerCase() === filters.specialty.toLowerCase() ||
             doctor.subspecialties?.some(sub =>
               sub.toLowerCase().includes(filters.specialty.toLowerCase())
             )
@@ -54,14 +55,14 @@ export function useDoctorRecommendations(filters: DoctorFilters) {
 
         if (filters.location) {
           filteredDoctors = filteredDoctors.filter(doctor =>
-            doctor.location.toLowerCase().includes(filters.location.toLowerCase()) ||
-            doctor.hospital.toLowerCase().includes(filters.location.toLowerCase())
+            doctor.location?.toLowerCase().includes(filters.location.toLowerCase()) ||
+            doctor.hospital?.toLowerCase().includes(filters.location.toLowerCase())
           );
         }
 
         if (filters.experience > 0) {
           filteredDoctors = filteredDoctors.filter(doctor =>
-            doctor.experience >= filters.experience
+            (doctor.experience || 0) >= filters.experience
           );
         }
 
@@ -116,23 +117,24 @@ export function useDoctorRecommendations(filters: DoctorFilters) {
 
             // Parse doctor IDs from response and map to doctor objects
             const recommendedIds = response.data.data || [];
+            const doctorPool = allDoctorsRef.current;
             if (Array.isArray(recommendedIds)) {
               const recommended = recommendedIds
-                .map(id => sampleDoctors.find(doc => doc._id === id))
+                .map(id => doctorPool.find(doc => doc._id === id))
                 .filter(Boolean) as Doctor[];
-              setRecommendedDoctors(recommended.length > 0 ? recommended : getSimpleRecommendations(healthData, sampleDoctors));
+              setRecommendedDoctors(recommended.length > 0 ? recommended : getSimpleRecommendations(healthData, doctorPool));
             } else {
-              setRecommendedDoctors(getSimpleRecommendations(healthData, sampleDoctors));
+              setRecommendedDoctors(getSimpleRecommendations(healthData, doctorPool));
             }
           } catch (err) {
             console.error("Error fetching recommendations from backend:", err);
             // Fallback to simple recommendations
-            const fallback = getSimpleRecommendations(healthData, sampleDoctors);
+            const fallback = getSimpleRecommendations(healthData, allDoctorsRef.current);
             setRecommendedDoctors(fallback);
           }
         } else {
           // No API key, use simple recommendations
-          const simpleRecommendations = getSimpleRecommendations(healthData, sampleDoctors);
+          const simpleRecommendations = getSimpleRecommendations(healthData, allDoctorsRef.current);
           setRecommendedDoctors(simpleRecommendations);
         }
 
@@ -141,7 +143,7 @@ export function useDoctorRecommendations(filters: DoctorFilters) {
         console.error('Error getting recommendations:', err);
         setError(err as Error);
         // Fallback to simple recommendations
-        const fallback = getSimpleRecommendations(healthData, sampleDoctors);
+        const fallback = getSimpleRecommendations(healthData, allDoctorsRef.current);
         setRecommendedDoctors(fallback);
         setIsLoadingRecommendations(false);
       }
@@ -190,7 +192,7 @@ function getSimpleRecommendations(healthData: any, doctors: Doctor[]): Doctor[] 
   if (recommended.length < 3) {
     const topRated = doctors
       .filter(d => !recommended.includes(d))
-      .sort((a, b) => b.rating - a.rating)
+      .sort((a, b) => (b.rating || 0) - (a.rating || 0))
       .slice(0, 3 - recommended.length);
 
     recommended = [...recommended, ...topRated];
