@@ -95,7 +95,7 @@ const AboutPage = () => {
           {/* Hero Section */}
           <motion.section variants={itemVariants} className="text-center mb-20">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              About <span className="text-gradient">Health<span className="font-extralight">Connect</span></span>
+              About <span className="text-gradient">Medi<span className="font-extralight">Bridge</span></span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Empowering individuals to take control of their health through personalized insights,

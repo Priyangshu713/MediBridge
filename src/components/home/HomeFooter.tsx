@@ -11,7 +11,7 @@ const HomeFooter = () => {
           <div className="mb-4 md:mb-0">
             <Link to="/" className="text-gradient font-bold text-xl tracking-tight">
               <HeartPulse className="inline-block mr-2 h-5 w-5 text-primary" />
-              Health<span className="font-extralight">Connect</span>
+              Medi<span className="font-extralight">Bridge</span>
             </Link>
           </div>
           

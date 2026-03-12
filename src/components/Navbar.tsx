@@ -312,7 +312,7 @@ const Navbar = () => {
         >
           <span className="text-gradient font-bold text-lg sm:text-xl md:text-2xl tracking-tight animate-fade-in">
             <Heart className="inline-block mr-1 sm:mr-2 h-4 w-4 text-primary animate-pulse-slow" />
-            Health<span className="font-extralight">Connect</span>
+            Medi<span className="font-extralight">Bridge</span>
           </span>
         </Link>
 
