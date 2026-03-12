@@ -46,6 +46,7 @@ const registerSchema = z.object({
     experience: z.coerce.number().min(0, { message: 'Experience must be a positive number' }),
     bio: z.string().min(10, { message: 'Bio should be at least 10 characters' }),
     phone: z.string().min(5, { message: 'Phone number is required' }),
+    proofOfQualification: z.string().min(5, { message: 'Please provide proof of your medical qualification (e.g. License Number or link to degree)' }),
 }).refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
     path: ['confirmPassword'],
@@ -109,6 +110,7 @@ const DoctorPortal: React.FC = () => {
             experience: 0,
             bio: '',
             phone: '',
+            proofOfQualification: '',
         },
     });
 
@@ -193,6 +195,7 @@ const DoctorPortal: React.FC = () => {
                 location: data.location,
                 experience: data.experience,
                 bio: data.bio,
+                proofOfQualification: data.proofOfQualification,
                 contactInfo: {
                     email: data.email,
                     phone: data.phone,
@@ -574,6 +577,26 @@ const DoctorPortal: React.FC = () => {
                                                                 />
                                                             </div>
                                                         </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <FormField
+                                                control={registerForm.control}
+                                                name="proofOfQualification"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Proof of Qualification <span className="text-destructive">*</span></FormLabel>
+                                                        <FormControl>
+                                                            <div className="relative">
+                                                                <Award className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                                <Input placeholder="Medical License Number or Link to LinkedIn/Drive..." className="pl-10" {...field} />
+                                                            </div>
+                                                        </FormControl>
+                                                        <CardDescription className="mt-1 text-xs">
+                                                            This is required for admin approval. You will not be listed until verified.
+                                                        </CardDescription>
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}

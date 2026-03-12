@@ -1,50 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Mail } from 'lucide-react';
+import { Mail, Download } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
 import { useDoctorAuth } from '@/hooks/useDoctorAuth';
-// import { useDoctorAuth } from '@/hooks/useDoctorAuth';
+import { supabase } from '@/lib/supabase';
 
 interface Message {
-  _id: string;
-  patienName: string;
-  patienEmail: string;
-  Messges: string;
+  id: string;
+  patient_name: string;
+  patient_email: string;
+  subject: string;
   body: string;
-  createdAt: string;
+  created_at: string;
+  has_attachment?: boolean;
+  attachment_base64?: string;
 }
-
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000/api';
-
-// Sample messages used when API data isn't available
-const sampleMessages: Message[] = [
-  {
-    _id: '1',
-    patienName: 'John Doe',
-    patienEmail: 'john@example.com',
-    Messges: 'Need advice on medication',
-    body: 'Hello doctor, I would like to know if I can continue the medication you prescribed last month or if I should adjust the dosage.',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    _id: '2',
-    patienName: 'Jane Smith',
-    patienEmail: 'jane.smith@example.com',
-    Messges: 'Follow-up appointment',
-    body: 'Dear doctor, could we schedule a follow-up appointment next week? The pain has subsided but I would like to be sure.',
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    _id: '3',
-    patienName: 'Michael Lee',
-    patienEmail: 'michael.lee@example.com',
-    Messges: 'Lab results inquiry',
-    body: 'Hi doctor, have my recent lab results come in? I am anxious to know if everything is normal.',
-    createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-  },
-];
 
 const Inbox: React.FC = () => {
   const { currentDoctor } = useDoctorAuth();
@@ -55,28 +27,27 @@ const Inbox: React.FC = () => {
   useEffect(() => {
     if (!currentDoctor) return;
 
-    const doctorEmail = currentDoctor.contactInfo?.email || (currentDoctor as any).email;
-    if (!doctorEmail) return;
+    const doctorId = currentDoctor.id || currentDoctor._id;
+    if (!doctorId) return;
 
     const fetchMessages = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`${API_URL}/auth/getAllmessage`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ doctorEmail }),
-        });
-        const data = await response.json();
-        if (data.allMessges && Array.isArray(data.allMessges)) {
-          setMessages(data.allMessges as Message[]);
-        } else {
+        const { data, error } = await supabase
+          .from('doctor_messages')
+          .select('*')
+          .eq('doctor_id', doctorId)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching messages:', error);
           setMessages([]);
+        } else {
+          setMessages(data || []);
         }
       } catch (error) {
         console.error('Error fetching messages:', error);
-        setMessages(sampleMessages);
+        setMessages([]);
       } finally {
         setIsLoading(false);
       }
@@ -94,6 +65,39 @@ const Inbox: React.FC = () => {
     });
   };
 
+  const handleDownloadAttachment = async (base64Data: string, patientName: string) => {
+    try {
+      // Decode base64 to array buffer
+      const res = await fetch(base64Data);
+      const blob = await res.blob();
+      
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `health_report_${patientName.replace(/\s+/g, '_').toLowerCase()}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+
+      toast({
+        title: 'Downloaded Attachment',
+        description: `Saved PDF from ${patientName}`,
+      });
+    } catch (error) {
+      console.error('Error downloading attachment:', error);
+      toast({
+        title: 'Download Failed',
+        description: 'Could not process the PDF attachment.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  if (isLoading) {
+    return <p className="text-muted-foreground text-sm">Loading messages...</p>;
+  }
+
   if (messages.length === 0) {
     return <p className="text-muted-foreground text-sm">No messages.</p>;
   }
@@ -102,22 +106,31 @@ const Inbox: React.FC = () => {
     <ScrollArea className="h-[60vh] pr-4">
       <div className="space-y-4">
         {messages.map((msg) => (
-          <Card key={msg._id}>
+          <Card key={msg.id}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Mail className="h-4 w-4" /> {msg.Messges}
+                <Mail className="h-4 w-4" /> {msg.subject}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <p className="text-sm text-muted-foreground">
-                From: {msg.patienName} ({msg.patienEmail}) • {new Date(msg.createdAt).toLocaleDateString()}
+                From: {msg.patient_name} ({msg.patient_email}) • {new Date(msg.created_at).toLocaleDateString()}
               </p>
               <p className="whitespace-pre-line break-words text-sm">{msg.body}</p>
             </CardContent>
-            <CardFooter>
-              <Button size="sm" onClick={() => handleReply(msg.patienEmail, msg.Messges)}>
+            <CardFooter className="flex gap-2">
+              <Button size="sm" onClick={() => handleReply(msg.patient_email, msg.subject)}>
                 Reply
               </Button>
+              {msg.has_attachment && msg.attachment_base64 && (
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => handleDownloadAttachment(msg.attachment_base64 as string, msg.patient_name)}
+                >
+                  <Download className="mr-2 h-4 w-4" /> Download PDF
+                </Button>
+              )}
             </CardFooter>
           </Card>
         ))}

@@ -16,8 +16,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = ({ doctor }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    localStorage.setItem("doctor_Id",doctor._id)
-    navigate(`/doctor/${doctor._id}`);
+    const doctorId = doctor.id || doctor._id;
+    navigate(`/doctor/${doctorId}`);
   };
 
   return (

@@ -138,7 +138,7 @@ const DoctorFinder = () => {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {doctors.map((doctor) => (
-                        <DoctorCard key={doctor._id} doctor={doctor} />
+                        <DoctorCard key={doctor.id || doctor._id} doctor={doctor} />
                       ))}
                     </div>
                   )}
@@ -174,7 +174,7 @@ const DoctorFinder = () => {
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {recommendedDoctors.map((doctor) => (
-                          <DoctorCard key={doctor._id} doctor={doctor} />
+                          <DoctorCard key={doctor.id || doctor._id} doctor={doctor} />
                         ))}
                       </div>
                     </div>

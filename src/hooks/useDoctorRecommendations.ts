@@ -1,7 +1,8 @@
 
 import { useEffect, useState, useRef } from 'react';
-import { Doctor } from '../types/doctor';
+import { Doctor, mapSupabaseDoctorRow } from '../types/doctor';
 import { useHealthStore } from '../store/healthStore';
+import { supabase } from '@/lib/supabase';
 
 interface DoctorFilters {
   specialty: string;
@@ -9,10 +10,8 @@ interface DoctorFilters {
   experience: number;
 }
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000/api';
-
 export function useDoctorRecommendations(filters: DoctorFilters) {
-  const { healthData, geminiApiKey, geminiModel } = useHealthStore();
+  const { healthData } = useHealthStore();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [recommendedDoctors, setRecommendedDoctors] = useState<Doctor[]>([]);
   const [isLoadingDoctors, setIsLoadingDoctors] = useState(true);
@@ -22,49 +21,49 @@ export function useDoctorRecommendations(filters: DoctorFilters) {
   // Keep a ref to all fetched doctors for recommendations fallback
   const allDoctorsRef = useRef<Doctor[]>([]);
 
-  // Get all doctors with filters
+  // Get all doctors with filters from Supabase
   useEffect(() => {
     const fetchDoctors = async () => {
       setIsLoadingDoctors(true);
       try {
-        const response = await fetch(`${API_URL}/auth/getAlldoctor`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        const data = await response.json();
-        const allDoctors: Doctor[] = data.allDoctor || [];
+        let query = supabase.from('doctors').select('*').eq('is_approved', true);
 
-        // Store all doctors for recommendation fallback
-        allDoctorsRef.current = allDoctors;
-
-        // Apply filters
-        let filteredDoctors = [...allDoctors];
-
+        // Apply filters at the query level for better performance
         if (filters.specialty) {
-          filteredDoctors = filteredDoctors.filter(doctor =>
-            doctor.specialty?.toLowerCase() === filters.specialty.toLowerCase() ||
-            doctor.subspecialties?.some(sub =>
-              sub.toLowerCase().includes(filters.specialty.toLowerCase())
-            )
-          );
+          query = query.ilike('specialty', `%${filters.specialty}%`);
         }
 
         if (filters.location) {
-          filteredDoctors = filteredDoctors.filter(doctor =>
-            doctor.location?.toLowerCase().includes(filters.location.toLowerCase()) ||
-            doctor.hospital?.toLowerCase().includes(filters.location.toLowerCase())
+          query = query.or(
+            `location.ilike.%${filters.location}%,hospital.ilike.%${filters.location}%`
           );
         }
 
         if (filters.experience > 0) {
-          filteredDoctors = filteredDoctors.filter(doctor =>
-            (doctor.experience || 0) >= filters.experience
-          );
+          query = query.gte('experience', filters.experience);
         }
 
-        setDoctors(filteredDoctors);
+        const { data, error: fetchError } = await query;
+
+        if (fetchError) {
+          throw fetchError;
+        }
+
+        const mappedDoctors = (data || []).map(mapSupabaseDoctorRow);
+
+        // If no filters applied, store all doctors for recommendations
+        if (!filters.specialty && !filters.location && filters.experience === 0) {
+          allDoctorsRef.current = mappedDoctors;
+        } else if (allDoctorsRef.current.length === 0) {
+          // Also fetch all doctors for recommendations if we haven't yet
+          const { data: allData } = await supabase.from('doctors').select('*').eq('is_approved', true);
+          allDoctorsRef.current = (allData || []).map(mapSupabaseDoctorRow);
+        }
+
+        // Store all doctors in localStorage for legacy DoctorDetails page compat
+        localStorage.setItem('allDoctor', JSON.stringify(mappedDoctors));
+
+        setDoctors(mappedDoctors);
         setIsLoadingDoctors(false);
       } catch (err) {
         console.error('Error fetching doctors:', err);
@@ -76,7 +75,7 @@ export function useDoctorRecommendations(filters: DoctorFilters) {
     fetchDoctors();
   }, [filters]);
 
-  // Get personalized recommendations using Gemini
+  // Get personalized recommendations
   useEffect(() => {
     const fetchRecommendations = async () => {
       if (!healthData.completedProfile) {
@@ -87,10 +86,14 @@ export function useDoctorRecommendations(filters: DoctorFilters) {
 
       setIsLoadingRecommendations(true);
       try {
-        // Use local recommendation algorithm based on health data
+        // If we don't have all doctors yet, fetch them
+        if (allDoctorsRef.current.length === 0) {
+          const { data } = await supabase.from('doctors').select('*');
+          allDoctorsRef.current = (data || []).map(mapSupabaseDoctorRow);
+        }
+
         const recommendations = getSimpleRecommendations(healthData, allDoctorsRef.current);
         setRecommendedDoctors(recommendations);
-
         setIsLoadingRecommendations(false);
       } catch (err) {
         console.error('Error getting recommendations:', err);
@@ -101,7 +104,7 @@ export function useDoctorRecommendations(filters: DoctorFilters) {
     };
 
     fetchRecommendations();
-  }, [healthData, geminiApiKey, geminiModel]);
+  }, [healthData]);
 
   return {
     doctors,

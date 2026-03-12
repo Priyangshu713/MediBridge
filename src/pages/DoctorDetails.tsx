@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
@@ -17,11 +17,9 @@ import { DoctorReviews } from '@/components/doctors/DoctorReviews';
 import { DoctorSchedule } from '@/components/doctors/DoctorSchedule';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-// import { Doctor } from '@/types/doctor';
-import { Doctor } from "@/types/doctor"
-const DoctorDetails = () => {
-  const { _id } = useParams<{ _id: string }>();
 
+const DoctorDetails = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { geminiTier, setGeminiTier, healthData } = useHealthStore();
@@ -29,38 +27,20 @@ const DoctorDetails = () => {
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [activeTab, setActiveTab] = useState('about');
-  const [doctor, setDoctor] = useState<any>("")
-  const [isLoading ,setIsloding] = useState(false);
 
+  // Use the hook directly — no more localStorage hack
   const {
-    // doctor,
-    // isLoading,
+    doctor,
+    isLoading,
     error
-  } = useDoctorDetails(_id);
-
-
+  } = useDoctorDetails(id);
 
   useEffect(() => {
-    // Check if user is Pro tier
     if (geminiTier !== 'pro') {
       setSubscriptionDialogOpen(true);
     }
     window.scrollTo(0, 0);
   }, [geminiTier]);
-
-  useEffect(() => {
-
-    setIsloding(true);
-    const getDoctorId = localStorage.getItem("doctor_Id");
-    const getAllDoctor: Doctor[] = JSON.parse(localStorage.getItem("allDoctor"));
-    const getDoctor = getAllDoctor?.filter(element => {
-      return element._id == getDoctorId
-    });
-    
-    setDoctor(getDoctor[0]);
-    setIsloding(false)
-
-  },[])
 
   const handleSelectTier = (tier: 'free' | 'lite' | 'pro') => {
     setGeminiTier(tier);
@@ -97,10 +77,7 @@ const DoctorDetails = () => {
       setSelectedDate(date);
       setContactDialogOpen(true);
     } else {
-      // If no date is provided, switch to the schedule tab
       setActiveTab('schedule');
-
-      // Scroll to the schedule section
       const scheduleSection = document.getElementById('schedule-section');
       if (scheduleSection) {
         setTimeout(() => {
@@ -307,7 +284,7 @@ const DoctorDetails = () => {
             </TabsContent>
 
             <TabsContent value="reviews">
-              <DoctorReviews doctorId={doctor?._id || ''} />
+              <DoctorReviews doctorId={doctor?.id || doctor?._id || ''} />
             </TabsContent>
           </Tabs>
         </div>

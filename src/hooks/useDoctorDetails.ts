@@ -1,8 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import { Doctor } from '@/types/doctor';
-
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000/api';
+import { Doctor, mapSupabaseDoctorRow } from '@/types/doctor';
+import { supabase } from '@/lib/supabase';
 
 export function useDoctorDetails(doctorId: string | undefined) {
   const [doctor, setDoctor] = useState<Doctor | null>(null);
@@ -20,26 +19,21 @@ export function useDoctorDetails(doctorId: string | undefined) {
       setIsLoading(true);
 
       try {
-        // Fetch all doctors and find the one with the matching ID
-        const response = await fetch(`${API_URL}/auth/getAlldoctor`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+        const { data, error: fetchError } = await supabase
+          .from('doctors')
+          .select('*')
+          .eq('id', doctorId)
+          .eq('is_approved', true)
+          .maybeSingle();
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch doctors');
+        if (fetchError) {
+          throw fetchError;
         }
 
-        const data = await response.json();
-        const allDoctors: Doctor[] = data.allDoctor || [];
-        const foundDoctor = allDoctors.find(d => d._id === doctorId);
-
-        if (foundDoctor) {
-          setDoctor(foundDoctor);
+        if (data) {
+          setDoctor(mapSupabaseDoctorRow(data));
         } else {
-          setError(new Error('Doctor not found'));
+          setError(new Error('Doctor not found or not yet approved'));
         }
 
         setIsLoading(false);

@@ -24,6 +24,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import UpdateNotification from './components/common/UpdateNotification';
 import ChangelogDemo from './components/demo/ChangelogDemo';
+import AdminPortal from './pages/AdminPortal';
 import './App.css';
 import { synchronizeTier, logoutUser } from '@/api/auth';
 
@@ -104,7 +105,7 @@ function App() {
   }, []);
 
   // Define public paths that don't require authentication
-  const publicPaths = ['/profile', '/ai-bot', '/forgot-password', '/reset-password', '/about', '/contact', '/doctor-portal'];
+  const publicPaths = ['/profile', '/ai-bot', '/forgot-password', '/reset-password', '/about', '/contact', '/doctor-portal', '/admin'];
 
   return (
     <>
@@ -182,6 +183,11 @@ function App() {
                 <Route path="/changelog-demo" element={
                   <ProtectedRoute publicPaths={publicPaths}>
                     <ChangelogDemo />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin" element={
+                  <ProtectedRoute publicPaths={publicPaths}>
+                    <AdminPortal />
                   </ProtectedRoute>
                 } />
                 <Route path="*" element={<NotFound />} />

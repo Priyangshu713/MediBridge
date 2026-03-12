@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import MobileBottomSheet from './mobile/MobileBottomSheet';
+import { supabase } from '@/lib/supabase';
 
 const Navbar = () => {
   const [activeItem, setActiveItem] = useState<string | null>(null);
@@ -164,18 +165,31 @@ const Navbar = () => {
     }, 150);
   };
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userName');
     localStorage.removeItem('token');
     localStorage.removeItem('geminiTier');
 
+    // Sign out from doctor portal if active
+    if (isDoctorUser || localStorage.getItem('isDoctorAuthenticated') === 'true') {
+      localStorage.removeItem('isDoctorAuthenticated');
+      localStorage.removeItem('doctorProfile');
+      try {
+        await supabase.auth.signOut();
+      } catch (err) {
+        console.error('Error signing out doctor from Supabase:', err);
+      }
+      window.dispatchEvent(new Event('doctorAuthChanged'));
+    }
+
     dispatchAuthEvent(false);
 
     setIsAuthenticated(false);
     setUserEmail('');
     setUserProfileImage(null);
+    setIsDoctorUser(false);
 
     toast({
       title: "Signed out",

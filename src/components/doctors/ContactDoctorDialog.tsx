@@ -11,6 +11,7 @@ import { FileText, Loader2, AlertCircle, FileUp, Check, ArrowUpCircle, Download,
 import { generatePDF, downloadPDF } from '@/utils/pdfGenerator';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from 'date-fns';
+import { supabase } from '@/lib/supabase';
 
 interface ContactDoctorDialogProps {
   isOpen: boolean;
@@ -18,7 +19,7 @@ interface ContactDoctorDialogProps {
   doctor: Doctor;
   appointmentDate?: Date;
 }
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000/api';
+
 
 export const ContactDoctorDialog: React.FC<ContactDoctorDialogProps> = ({
   isOpen,
@@ -46,6 +47,15 @@ export const ContactDoctorDialog: React.FC<ContactDoctorDialogProps> = ({
     }
   }, [appointmentDate, doctor.lastName]);
 
+  const blobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -53,94 +63,78 @@ export const ContactDoctorDialog: React.FC<ContactDoctorDialogProps> = ({
       setShowAdvancedAnalysisPrompt(true);
       return;
     } else if (message) {
-      console.log(`Message to doctor: ${message} `);
-
-      const token = localStorage.getItem('token');
-
-      if (!token) {
-        toast({
-          title: 'Please log in',
-          description: 'You need to be logged in to send a message to a doctor.',
-          variant: 'destructive',
-        });
-        return;
-      }
-
+      setIsSubmitting(true);
       try {
-        const response = await fetch(`${API_URL}/auth/messageForDoctor`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            doctorId: doctor._id,
-            messges: `Requested appointment date: ${appointmentDate ? format(appointmentDate, 'EEEE, MMMM do, yyyy') : ""}`,
-            body: message
-          }),
-        });
+        // Get current user session from patient auth (localStorage)
+        const isAuth = localStorage.getItem('isAuthenticated') === 'true';
+        const patientName = localStorage.getItem('userName') || localStorage.getItem('userEmail')?.split('@')[0] || 'Patient';
+        const patientEmail = localStorage.getItem('userEmail') || 'unknown@example.com';
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('Message send error:', errorData);
+        if (!isAuth) {
           toast({
-            title: 'Failed to send message',
-            description: errorData.message || 'Please try again later.',
+            title: 'Please log in',
+            description: 'You need to be logged in to send a message to a doctor.',
             variant: 'destructive',
           });
+          setIsSubmitting(false);
+          return;
         }
-      } catch (error) {
+
+        let base64Pdf = null;
+        if (shareHealthData) {
+          setPdfGenerating(true);
+          try {
+            const generatedPdf = await generatePDF(healthData, doctor);
+            setPdfBlob(generatedPdf);
+            setPdfGenerated(true);
+            base64Pdf = await blobToBase64(generatedPdf);
+          } catch (error) {
+            console.error("Error generating PDF:", error);
+            toast({
+              title: "PDF Generation Failed",
+              description: "Could not generate health data PDF. Sending without attachment.",
+              variant: "destructive",
+            });
+          }
+          setPdfGenerating(false);
+        }
+
+        const { error: insertError } = await supabase
+          .from('doctor_messages')
+          .insert({
+            doctor_id: doctor.id || doctor._id,
+            patient_name: patientName,
+            patient_email: patientEmail,
+            subject: `Requested appointment date: ${appointmentDate ? format(appointmentDate, 'EEEE, MMMM do, yyyy') : 'Not specified'}`,
+            body: message,
+            attachment_base64: base64Pdf,
+            has_attachment: !!base64Pdf
+          });
+
+        if (insertError) {
+          throw insertError;
+        }
+
+        setIsSubmitting(false);
+        toast({
+          title: "Request sent successfully",
+          description: `Your consultation request has been sent to Dr. ${doctor.lastName}.`,
+        });
+        
+        setPdfGenerated(false);
+        setShowAdvancedAnalysisPrompt(false);
+        onClose();
+
+      } catch (error: any) {
+        setIsSubmitting(false);
         console.error('Error sending message:', error);
         toast({
           title: 'Failed to send message',
-          description: 'Network error. Please check your connection.',
+          description: error.message || 'Network error. Please check your connection.',
           variant: 'destructive',
         });
       }
     }
-
-
-
-
-
-
-
-
-
-
-
-    setIsSubmitting(true);
-
-    if (shareHealthData) {
-      try {
-        setPdfGenerating(true);
-        const generatedPdf = await generatePDF(healthData, doctor);
-        setPdfBlob(generatedPdf);
-        setPdfGenerated(true);
-        setPdfGenerating(false);
-      } catch (error) {
-        console.error("Error generating PDF:", error);
-        toast({
-          title: "PDF Generation Failed",
-          description: "Could not generate health data PDF. Your request will be sent without the attachment.",
-          variant: "destructive",
-        });
-        setPdfGenerating(false);
-      }
-    }
-
-    setTimeout(() => {
-      setIsSubmitting(false);
-
-      toast({
-        title: "Request sent successfully",
-        description: `Your consultation request has been sent to Dr. ${doctor.lastName}.`,
-      });
-
-      setPdfGenerated(false);
-      setShowAdvancedAnalysisPrompt(false);
-      onClose();
-    }, 1500);
   };
 
   const continueWithoutAdvancedAnalysis = () => {
