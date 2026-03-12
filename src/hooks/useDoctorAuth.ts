@@ -141,11 +141,42 @@ export function useDoctorAuth() {
         }
     };
 
+    const registerDoctor = async (doctorData: any): Promise<{ success: boolean; message: string }> => {
+        try {
+            const response = await fetch(`${API_URL}/auth/registerDoctor`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(doctorData),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                return { success: false, message: errorData.message || 'Registration failed' };
+            }
+
+            const data = await response.json();
+
+            // Auto-login after registration: fetch the full doctor profile
+            const loginResult = await loginDoctor(doctorData.email, doctorData.password);
+            if (loginResult.success) {
+                return { success: true, message: 'Registration successful! You are now logged in.' };
+            }
+
+            return { success: true, message: 'Registration successful! Please log in.' };
+        } catch (error) {
+            console.error('Error during doctor registration:', error);
+            return { success: false, message: 'An error occurred during registration. Please check your connection.' };
+        }
+    };
+
     return {
         isAuthenticated,
         currentDoctor,
         loginDoctor,
         logoutDoctor,
-        updateDoctorProfile
+        updateDoctorProfile,
+        registerDoctor
     };
 }

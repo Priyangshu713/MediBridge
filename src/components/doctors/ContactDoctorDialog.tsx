@@ -56,27 +56,47 @@ export const ContactDoctorDialog: React.FC<ContactDoctorDialogProps> = ({
       console.log(`Message to doctor: ${message} `);
 
       const token = localStorage.getItem('token');
-      const doctor_Id = localStorage.getItem("doctor_Id");
 
-
-      if (!token || !doctor_Id) {
-        throw new Error('No authentication token found');
+      if (!token) {
+        toast({
+          title: 'Please log in',
+          description: 'You need to be logged in to send a message to a doctor.',
+          variant: 'destructive',
+        });
+        return;
       }
 
-      const response = await fetch(`${API_URL}/auth/messageForDoctor`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          
-          doctorId:doctor_Id,
-          messges : `Requested appointment date: ${appointmentDate ? format(appointmentDate, 'EEEE, MMMM do, yyyy') : ""}`,
-          body:message
+      try {
+        const response = await fetch(`${API_URL}/auth/messageForDoctor`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            doctorId: doctor._id,
+            messges: `Requested appointment date: ${appointmentDate ? format(appointmentDate, 'EEEE, MMMM do, yyyy') : ""}`,
+            body: message
+          }),
+        });
 
-        }),
-      });
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Message send error:', errorData);
+          toast({
+            title: 'Failed to send message',
+            description: errorData.message || 'Please try again later.',
+            variant: 'destructive',
+          });
+        }
+      } catch (error) {
+        console.error('Error sending message:', error);
+        toast({
+          title: 'Failed to send message',
+          description: 'Network error. Please check your connection.',
+          variant: 'destructive',
+        });
+      }
     }
 
 

@@ -33,6 +33,24 @@ const loginSchema = z.object({
     password: z.string().min(1, { message: 'Password is required' }),
 });
 
+// Registration form schema
+const registerSchema = z.object({
+    firstName: z.string().min(2, { message: 'First name must be at least 2 characters' }),
+    lastName: z.string().min(2, { message: 'Last name must be at least 2 characters' }),
+    email: z.string().email({ message: 'Please enter a valid email' }),
+    password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
+    confirmPassword: z.string().min(6, { message: 'Please confirm your password' }),
+    specialty: z.string().min(2, { message: 'Specialty is required' }),
+    hospital: z.string().min(2, { message: 'Hospital/Clinic name is required' }),
+    location: z.string().min(2, { message: 'Location is required' }),
+    experience: z.coerce.number().min(0, { message: 'Experience must be a positive number' }),
+    bio: z.string().min(10, { message: 'Bio should be at least 10 characters' }),
+    phone: z.string().min(5, { message: 'Phone number is required' }),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+});
+
 // Profile update schema
 const profileSchema = z.object({
     firstName: z.string().min(2, { message: 'First name must be at least 2 characters' }),
@@ -59,7 +77,8 @@ const daysOfWeek = [
 ];
 
 const DoctorPortal: React.FC = () => {
-    const { isAuthenticated, currentDoctor, loginDoctor, logoutDoctor, updateDoctorProfile } = useDoctorAuth();
+    const { isAuthenticated, currentDoctor, loginDoctor, logoutDoctor, updateDoctorProfile, registerDoctor } = useDoctorAuth();
+    const [authTab, setAuthTab] = useState<'login' | 'register'>('login');
     const { toast } = useToast();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
@@ -74,30 +93,24 @@ const DoctorPortal: React.FC = () => {
             password: '',
         },
     });
-    // useEffect(() => {
-    //     (async () => {
-    //         // Check if user is authenticated
-    //         if (isAuthenticated && currentDoctor) {
-    //             // Redirect to profile tab if authenticated
-    //             // navigate('/doctor-portal/profile');
-    //             const response = await fetch(`${API_URL}/auth/getAllmessage`, {
-    //                 method: 'POST',
-    //                 headers: {
-    //                     'Content-Type': 'application/json',
-    //                 },
-    //                 body: JSON.stringify({ doctorEmail:currentDoctor?.contactInfo?.email }),
-    //             });
-    //             const data = await response.json();
-    //             setGetMessages(data.allMessges);
 
-    //         } else {
-    //             // If not authenticated, redirect to login
-    //             navigate('/doctor-portal/login');
-    //         }
-
-    //     })()
-
-    // }, [isAuthenticated, currentDoctor]);
+    // Registration form
+    const registerForm = useForm<z.infer<typeof registerSchema>>({
+        resolver: zodResolver(registerSchema),
+        defaultValues: {
+            firstName: '',
+            lastName: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+            specialty: '',
+            hospital: '',
+            location: '',
+            experience: 0,
+            bio: '',
+            phone: '',
+        },
+    });
 
 
     // Profile form
@@ -166,6 +179,53 @@ const DoctorPortal: React.FC = () => {
         }
     };
 
+    const handleRegister = async (data: z.infer<typeof registerSchema>) => {
+        setIsLoading(true);
+
+        try {
+            const result = await registerDoctor({
+                firstName: data.firstName,
+                lastName: data.lastName,
+                email: data.email,
+                password: data.password,
+                specialty: data.specialty,
+                hospital: data.hospital,
+                location: data.location,
+                experience: data.experience,
+                bio: data.bio,
+                contactInfo: {
+                    email: data.email,
+                    phone: data.phone,
+                },
+                availability: {
+                    days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+                    hours: '9:00 AM - 5:00 PM',
+                },
+            });
+
+            if (result.success) {
+                toast({
+                    title: 'Registration successful!',
+                    description: 'Welcome to MediBridge! You are now logged in.',
+                });
+            } else {
+                toast({
+                    title: 'Registration failed',
+                    description: result.message,
+                    variant: 'destructive',
+                });
+            }
+        } catch (error) {
+            toast({
+                title: 'Error',
+                description: 'An unexpected error occurred during registration',
+                variant: 'destructive',
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleUpdateProfile = async (data: z.infer<typeof profileSchema>) => {
         setIsLoading(true);
 
@@ -227,83 +287,317 @@ const DoctorPortal: React.FC = () => {
                 <h1 className="text-3xl font-bold mb-6">Doctor Specialist Portal</h1>
 
                 {!isAuthenticated ? (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Doctor Login</CardTitle>
-                            <CardDescription>
-                                Please enter your credentials to access the specialist portal
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Form {...loginForm}>
-                                <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
-                                    <FormField
-                                        control={loginForm.control}
-                                        name="email"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Email</FormLabel>
-                                                <FormControl>
-                                                    <div className="relative">
-                                                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                        <Input
-                                                            placeholder="doctor@example.com"
-                                                            className="pl-10"
-                                                            {...field}
-                                                        />
-                                                    </div>
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                    <Tabs value={authTab} onValueChange={(v) => setAuthTab(v as 'login' | 'register')} className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 mb-4">
+                            <TabsTrigger value="login">Login</TabsTrigger>
+                            <TabsTrigger value="register">Register</TabsTrigger>
+                        </TabsList>
 
-                                    <FormField
-                                        control={loginForm.control}
-                                        name="password"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Password</FormLabel>
-                                                <FormControl>
-                                                    <div className="relative">
-                                                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                        <Input
-                                                            type={showPassword ? 'text' : 'password'}
-                                                            placeholder="••••••••"
-                                                            className="pl-10 pr-10"
-                                                            {...field}
-                                                        />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setShowPassword(prev => !prev)}
-                                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                                                        >
-                                                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                                        </button>
-                                                    </div>
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                        <TabsContent value="login">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Doctor Login</CardTitle>
+                                    <CardDescription>
+                                        Please enter your credentials to access the specialist portal
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Form {...loginForm}>
+                                        <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
+                                            <FormField
+                                                control={loginForm.control}
+                                                name="email"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Email</FormLabel>
+                                                        <FormControl>
+                                                            <div className="relative">
+                                                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                                <Input
+                                                                    placeholder="doctor@example.com"
+                                                                    className="pl-10"
+                                                                    {...field}
+                                                                />
+                                                            </div>
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
 
-                                    <Button
-                                        type="submit"
-                                        className="w-full"
-                                        disabled={isLoading}
-                                    >
-                                        {isLoading ? 'Logging in...' : 'Login'}
-                                    </Button>
-                                </form>
-                            </Form>
+                                            <FormField
+                                                control={loginForm.control}
+                                                name="password"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Password</FormLabel>
+                                                        <FormControl>
+                                                            <div className="relative">
+                                                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                                <Input
+                                                                    type={showPassword ? 'text' : 'password'}
+                                                                    placeholder="••••••••"
+                                                                    className="pl-10 pr-10"
+                                                                    {...field}
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setShowPassword(prev => !prev)}
+                                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                                                                >
+                                                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                                                </button>
+                                                            </div>
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
 
-                            <div className="mt-4 text-sm text-muted-foreground">
-                                <p className="text-center">
-                                    For demo: Use any doctor email from the specialists section with their last name as password
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                                            <Button
+                                                type="submit"
+                                                className="w-full"
+                                                disabled={isLoading}
+                                            >
+                                                {isLoading ? 'Logging in...' : 'Login'}
+                                            </Button>
+                                        </form>
+                                    </Form>
+
+                                    <div className="mt-4 text-sm text-muted-foreground">
+                                        <p className="text-center">
+                                            New doctor? <button onClick={() => setAuthTab('register')} className="text-primary underline">Register here</button>
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        <TabsContent value="register">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Join MediBridge</CardTitle>
+                                    <CardDescription>
+                                        Register as a specialist to connect with patients and manage your practice
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Form {...registerForm}>
+                                        <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <FormField
+                                                    control={registerForm.control}
+                                                    name="firstName"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>First Name</FormLabel>
+                                                            <FormControl>
+                                                                <div className="relative">
+                                                                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                                    <Input placeholder="Sarah" className="pl-10" {...field} />
+                                                                </div>
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={registerForm.control}
+                                                    name="lastName"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Last Name</FormLabel>
+                                                            <FormControl>
+                                                                <div className="relative">
+                                                                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                                    <Input placeholder="Miller" className="pl-10" {...field} />
+                                                                </div>
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+
+                                            <FormField
+                                                control={registerForm.control}
+                                                name="email"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Email</FormLabel>
+                                                        <FormControl>
+                                                            <div className="relative">
+                                                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                                <Input placeholder="doctor@example.com" className="pl-10" {...field} />
+                                                            </div>
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <FormField
+                                                    control={registerForm.control}
+                                                    name="password"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Password</FormLabel>
+                                                            <FormControl>
+                                                                <div className="relative">
+                                                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                                    <Input type="password" placeholder="••••••••" className="pl-10" {...field} />
+                                                                </div>
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={registerForm.control}
+                                                    name="confirmPassword"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Confirm Password</FormLabel>
+                                                            <FormControl>
+                                                                <div className="relative">
+                                                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                                    <Input type="password" placeholder="••••••••" className="pl-10" {...field} />
+                                                                </div>
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <FormField
+                                                    control={registerForm.control}
+                                                    name="specialty"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Specialty</FormLabel>
+                                                            <FormControl>
+                                                                <div className="relative">
+                                                                    <Award className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                                    <Input placeholder="e.g. Cardiologist" className="pl-10" {...field} />
+                                                                </div>
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={registerForm.control}
+                                                    name="hospital"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Hospital/Clinic</FormLabel>
+                                                            <FormControl>
+                                                                <div className="relative">
+                                                                    <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                                    <Input placeholder="e.g. City Hospital" className="pl-10" {...field} />
+                                                                </div>
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <FormField
+                                                    control={registerForm.control}
+                                                    name="location"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Location</FormLabel>
+                                                            <FormControl>
+                                                                <div className="relative">
+                                                                    <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                                    <Input placeholder="e.g. New Delhi, India" className="pl-10" {...field} />
+                                                                </div>
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                                <FormField
+                                                    control={registerForm.control}
+                                                    name="experience"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Years of Experience</FormLabel>
+                                                            <FormControl>
+                                                                <div className="relative">
+                                                                    <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                                    <Input type="number" className="pl-10" {...field} />
+                                                                </div>
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+
+                                            <FormField
+                                                control={registerForm.control}
+                                                name="phone"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Phone</FormLabel>
+                                                        <FormControl>
+                                                            <div className="relative">
+                                                                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                                <Input placeholder="+91 9876543210" className="pl-10" {...field} />
+                                                            </div>
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <FormField
+                                                control={registerForm.control}
+                                                name="bio"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Professional Bio</FormLabel>
+                                                        <FormControl>
+                                                            <div className="relative">
+                                                                <BookOpen className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                                                <Textarea
+                                                                    placeholder="Tell patients about your qualifications and expertise..."
+                                                                    className="min-h-24 pl-10 pt-2"
+                                                                    {...field}
+                                                                />
+                                                            </div>
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <Button
+                                                type="submit"
+                                                className="w-full"
+                                                disabled={isLoading}
+                                            >
+                                                {isLoading ? 'Registering...' : 'Register & Join MediBridge'}
+                                            </Button>
+                                        </form>
+                                    </Form>
+
+                                    <div className="mt-4 text-sm text-muted-foreground">
+                                        <p className="text-center">
+                                            Already registered? <button onClick={() => setAuthTab('login')} className="text-primary underline">Login here</button>
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+                    </Tabs>
                 ) : (
                     <div className="h-[calc(100vh-180px)] flex flex-col">
                         <Card className="mb-4">
