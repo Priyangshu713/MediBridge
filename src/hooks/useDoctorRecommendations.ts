@@ -1,6 +1,5 @@
 
 import { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
 import { Doctor } from '../types/doctor';
 import { useHealthStore } from '../store/healthStore';
 
@@ -88,62 +87,15 @@ export function useDoctorRecommendations(filters: DoctorFilters) {
 
       setIsLoadingRecommendations(true);
       try {
-        // Use backend API for recommendations
-        if (geminiApiKey) {
-          try {
-            const controller = new AbortController();
-            const response = await axios.post(
-              `${import.meta.env.VITE_BACKEND_URL_PROD}/doctor-recommendations`,
-              {
-                age: healthData.age || 0,
-                gender: healthData.gender || "Not specified",
-                bmi: healthData.bmi || 24,
-                bmiCategory: healthData.bmiCategory || "Normal",
-                bloodGlucose: healthData.bloodGlucose || 100,
-                sleepScore: healthData.sleepScore || 0,
-                exerciseScore: healthData.exerciseScore || 0,
-                stressScore: healthData.stressScore || 0,
-                hydrationScore: healthData.hydrationScore || 0,
-              },
-              {
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                signal: controller.signal,
-              }
-            );
-            controller.abort();
-
-            // Parse doctor IDs from response and map to doctor objects
-            const recommendedIds = response.data.data || [];
-            const doctorPool = allDoctorsRef.current;
-            if (Array.isArray(recommendedIds)) {
-              const recommended = recommendedIds
-                .map(id => doctorPool.find(doc => doc._id === id))
-                .filter(Boolean) as Doctor[];
-              setRecommendedDoctors(recommended.length > 0 ? recommended : getSimpleRecommendations(healthData, doctorPool));
-            } else {
-              setRecommendedDoctors(getSimpleRecommendations(healthData, doctorPool));
-            }
-          } catch (err) {
-            console.error("Error fetching recommendations from backend:", err);
-            // Fallback to simple recommendations
-            const fallback = getSimpleRecommendations(healthData, allDoctorsRef.current);
-            setRecommendedDoctors(fallback);
-          }
-        } else {
-          // No API key, use simple recommendations
-          const simpleRecommendations = getSimpleRecommendations(healthData, allDoctorsRef.current);
-          setRecommendedDoctors(simpleRecommendations);
-        }
+        // Use local recommendation algorithm based on health data
+        const recommendations = getSimpleRecommendations(healthData, allDoctorsRef.current);
+        setRecommendedDoctors(recommendations);
 
         setIsLoadingRecommendations(false);
       } catch (err) {
         console.error('Error getting recommendations:', err);
         setError(err as Error);
-        // Fallback to simple recommendations
-        const fallback = getSimpleRecommendations(healthData, allDoctorsRef.current);
-        setRecommendedDoctors(fallback);
+        setRecommendedDoctors([]);
         setIsLoadingRecommendations(false);
       }
     };
