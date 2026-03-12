@@ -559,7 +559,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ isOpen, onClose }) =>
             case 'lite':
                 return [
                     'Access to Personalized diet plan with detailed nutrition breakdowns',
-                    'Access to Health Connect AI Assistant',
+                    'Access to MediBridge AI Assistant',
                     'Priority email support',
                     'AI-powered recommendations for health improvements',
                     'Ad-free experience throughout the application'
@@ -1094,7 +1094,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ isOpen, onClose }) =>
                                         <Crown className="h-12 w-12 text-amber-500 mb-3" />
                                         <h3 className="text-lg font-bold text-amber-900 mb-2">You deserve the best care.</h3>
                                         <p className="text-center text-sm text-amber-800/80 max-w-sm">
-                                            We built HealthConnect Pro to give you the absolute best medical and nutritional tools available. Don't compromise on your health journey now.
+                                            We built MediBridge Pro to give you the absolute best medical and nutritional tools available. Don't compromise on your health journey now.
                                         </p>
                                     </div>
                                 </div>

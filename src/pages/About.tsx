@@ -21,7 +21,7 @@ const AboutPage = () => {
     {
       name: "Priyangshu Dutta",
       role: "UI/UX Designer, Front-end Developer, AI Model Developer",
-      description: "Leads the user interface design, front-end development, and AI model integration for Health Connect.",
+      description: "Leads the user interface design, front-end development, and AI model integration for MediBridge.",
       image: "https://avatars.githubusercontent.com/u/134028923?v=4",
       github: "https://github.com/Priyangshu713",
       linkedin: "https://www.linkedin.com/in/priyangshu-dutta-/"
@@ -37,7 +37,7 @@ const AboutPage = () => {
     {
       name: "Abhilash Bhunia",
       role: "AI Model Developer, Data Analysis",
-      description: "Develops advanced AI models and performs health data analysis to power Health Connect's recommendations.",
+      description: "Develops advanced AI models and performs health data analysis to power MediBridge's recommendations.",
       image: "https://avatars.githubusercontent.com/u/96327051?v=4",
       github: "https://github.com/Abhilash-Bh",
       linkedin: "https://www.linkedin.com/in/abhilash-bhunia-2807261a3/"
@@ -45,7 +45,7 @@ const AboutPage = () => {
     {
       name: "Swapnil Pramanik",
       role: "Front-end Developer, Backend Developer",
-      description: "Creates responsive user interfaces and builds the backend infrastructure for Health Connect.",
+      description: "Creates responsive user interfaces and builds the backend infrastructure for MediBridge.",
       image: "https://avatars.githubusercontent.com/u/147524160?v=4",
       github: "https://github.com/Swapnil8918980827",
       linkedin: "https://www.linkedin.com/in/swapnil-pramanik-774860354/"
@@ -61,7 +61,7 @@ const AboutPage = () => {
     {
       name: "Anirban Maity",
       role: "Security analyst & PenTester",
-      description: "Ensures Health Connect's security through data authentication and penetration testing methodologies.",
+      description: "Ensures MediBridge's security through data authentication and penetration testing methodologies.",
       image: "https://avatars.githubusercontent.com/u/174888109?v=4",
       github: "https://github.com/cobraa9",
       // linkedin: "https://linkedin.com/in/anirbanmaity"
@@ -103,7 +103,7 @@ const AboutPage = () => {
             </p>
           </motion.section>
 
-          {/* Why Health Connect is Important */}
+          {/* Why MediBridge is Important */}
           <motion.section variants={itemVariants} className="mb-20">
             <div className="flex flex-col md:flex-row gap-12 items-center">
               <div className="md:w-1/3 flex justify-center">
@@ -112,13 +112,13 @@ const AboutPage = () => {
                 </div>
               </div>
               <div className="md:w-2/3">
-                <h2 className="text-3xl font-semibold mb-6">Why Health Connect Matters</h2>
+                <h2 className="text-3xl font-semibold mb-6">Why MediBridge Matters</h2>
                 <p className="text-muted-foreground mb-4 leading-relaxed">
                   In today's fast-paced world, managing personal health has become increasingly complex. With overwhelming
                   information available online, people struggle to find reliable, personalized guidance tailored to their unique needs.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  Health Connect bridges this gap by providing evidence-based health tracking, personalized recommendations,
+                  MediBridge bridges this gap by providing evidence-based health tracking, personalized recommendations,
                   and an intuitive platform that makes health management accessible to everyone, regardless of their health literacy level.
                 </p>
               </div>
@@ -195,7 +195,7 @@ const AboutPage = () => {
               <div className="md:w-2/3">
                 <h2 className="text-3xl font-semibold mb-6">Our Impact</h2>
                 <p className="text-muted-foreground mb-6 leading-relaxed">
-                  Health Connect is revolutionizing how individuals approach their health, leading to measurable improvements in wellness outcomes and healthcare efficiency.
+                  MediBridge is revolutionizing how individuals approach their health, leading to measurable improvements in wellness outcomes and healthcare efficiency.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Card className="bg-card/50 backdrop-blur-sm border border-primary/10 hover:border-primary/20 transition-all duration-300">
@@ -211,7 +211,7 @@ const AboutPage = () => {
                     <CardContent className="p-6">
                       <h3 className="font-semibold text-lg mb-3">Healthcare System</h3>
                       <p className="text-muted-foreground leading-relaxed">
-                        By promoting preventive care and early intervention, Health Connect helps reduce healthcare costs and alleviates pressure on overburdened healthcare systems.
+                        By promoting preventive care and early intervention, MediBridge helps reduce healthcare costs and alleviates pressure on overburdened healthcare systems.
                       </p>
                     </CardContent>
                   </Card>
@@ -226,7 +226,7 @@ const AboutPage = () => {
           <motion.section variants={itemVariants} className="mt-20">
             <h2 className="text-3xl font-semibold mb-6 text-center">Our Team</h2>
             <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
-              Health Connect was developed by a multidisciplinary team of specialists passionate about improving global health outcomes through technology.
+              MediBridge was developed by a multidisciplinary team of specialists passionate about improving global health outcomes through technology.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
@@ -281,7 +281,7 @@ const AboutPage = () => {
               <MessageSquare className="h-12 w-12 text-primary mx-auto mb-6 opacity-80" />
               <h2 className="text-2xl font-semibold mb-4">Get in Touch</h2>
               <p className="text-muted-foreground mb-8 max-w-xl mx-auto leading-relaxed">
-                Have questions about Health Connect? Want to learn more about how we can help you on your health journey?
+                Have questions about MediBridge? Want to learn more about how we can help you on your health journey?
               </p>
               <Button
                 variant="default"

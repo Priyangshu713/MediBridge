@@ -69,7 +69,7 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
               Your subscription is now active and will renew every {formattedBillingCycle}.
             </p>
             <p className="mt-4 text-sm font-medium text-green-600">
-              Thank you for subscribing to Health Connect!
+              Thank you for subscribing to MediBridge!
             </p>
           </div>
           

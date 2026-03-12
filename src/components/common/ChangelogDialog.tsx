@@ -44,7 +44,7 @@ const legacyData: LegacyVersion[] = [
     {
         version: "v1.0",
         date: "March 2025",
-        description: "The beginning of Health Connect. Basic health tracking and initial AI models.",
+        description: "The beginning of MediBridge. Basic health tracking and initial AI models.",
         link: "https://health-connect-bice.vercel.app/",
         era: "The Foundation",
         growth: 15
@@ -362,7 +362,7 @@ const changelogData: ChangelogItem[] = [
         version: '1.0.0',
         items: [
             {
-                text: 'Official launch of Health Connect platform',
+                text: 'Official launch of MediBridge platform',
                 type: 'announcement'
             },
             {
@@ -439,7 +439,7 @@ const ChangelogDialog: React.FC<ChangelogDialogProps> = ({ isOpen, onClose }) =>
                 <DialogHeader>
                     <div className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-primary" />
-                        <DialogTitle className="text-xl">What's New in HealthConnect</DialogTitle>
+                        <DialogTitle className="text-xl">What's New in MediBridge</DialogTitle>
                     </div>
                     <DialogDescription>
                         See the latest updates, improvements, and features we've added to make your health journey better.

@@ -74,7 +74,7 @@ const FeaturesSection = () => {
       >
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 text-gradient text-center">Your Health, Simplified</h2>
         <p className="text-base sm:text-lg text-foreground max-w-xl mx-auto px-4 sm:px-0 text-center">
-          Health Connect provides the tools and insights you need to make informed decisions about your well-being.
+          MediBridge provides the tools and insights you need to make informed decisions about your well-being.
         </p>
       </motion.div>
 

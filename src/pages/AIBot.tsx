@@ -388,7 +388,7 @@ const AIBot = () => {
                   ) : (
                     <Bot className="h-5 w-5 text-health-lavender" />
                   )}
-                  {isPaidUser ? 'Health Connect AI Assistant' : 'Health Connect AI Assistant'}
+                  {isPaidUser ? 'MediBridge AI Assistant' : 'MediBridge AI Assistant'}
                   {isPaidUser && (
                     <>
                       <span className="ml-2 text-xs bg-health-lavender/10 text-health-lavender py-1 px-2 rounded-full">

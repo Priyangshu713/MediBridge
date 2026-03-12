@@ -41,7 +41,7 @@ const AuthView = ({ onLoginSuccess }: AuthViewProps) => {
       <motion.div variants={itemVariants} className="w-full max-w-md mb-8 text-center">
         <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center justify-center gap-2">
           <Heart className="text-primary h-8 w-8" />
-          HealthConnect
+          MediBridge
         </h1>
         <p className="text-base text-muted-foreground font-medium">Your personalized wellness journey</p>
       </motion.div>
@@ -55,7 +55,7 @@ const AuthView = ({ onLoginSuccess }: AuthViewProps) => {
             <CardDescription className="text-center text-sm">
               {activeTab === 'login'
                 ? 'Enter your details below to sign in'
-                : 'Join HealthConnect to start your journey'}
+                : 'Join MediBridge to start your journey'}
             </CardDescription>
           </CardHeader>
           <CardContent className="px-8 pb-8">

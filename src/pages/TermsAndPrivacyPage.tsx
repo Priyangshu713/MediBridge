@@ -85,47 +85,47 @@ const TermsAndPrivacyPage = () => {
                             <div className="space-y-4 text-muted-foreground">
                                 <section>
                                     <h3 className="font-medium text-foreground mb-2">1. Acceptance of Terms</h3>
-                                    <p>By accessing or using HealthConnect, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.</p>
+                                    <p>By accessing or using MediBridge, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.</p>
                                 </section>
 
                                 <section>
                                     <h3 className="font-medium text-foreground mb-2">2. Service Description</h3>
-                                    <p>HealthConnect provides a platform for users to track and manage personal health information. Our service offers tools to monitor health metrics, set goals, and receive personalized insights.</p>
+                                    <p>MediBridge provides a platform for users to track and manage personal health information. Our service offers tools to monitor health metrics, set goals, and receive personalized insights.</p>
                                 </section>
 
                                 <section>
                                     <h3 className="font-medium text-foreground mb-2">3. User Accounts</h3>
-                                    <p>To use HealthConnect, you must create an account with a valid email address and password. You are responsible for maintaining the confidentiality of your account information and for all activities that occur under your account.</p>
+                                    <p>To use MediBridge, you must create an account with a valid email address and password. You are responsible for maintaining the confidentiality of your account information and for all activities that occur under your account.</p>
                                 </section>
 
                                 <section>
                                     <h3 className="font-medium text-foreground mb-2">4. Local Data Storage</h3>
-                                    <p>HealthConnect is designed to store your health data locally on your device. We do not store your health information on our servers. You are responsible for backing up your data.</p>
+                                    <p>MediBridge is designed to store your health data locally on your device. We do not store your health information on our servers. You are responsible for backing up your data.</p>
                                 </section>
 
                                 <section>
                                     <h3 className="font-medium text-foreground mb-2">5. User Conduct</h3>
-                                    <p>You agree not to use HealthConnect for any unlawful purpose or in any way that could damage, disable, or impair the service. You may not attempt to gain unauthorized access to any part of the service.</p>
+                                    <p>You agree not to use MediBridge for any unlawful purpose or in any way that could damage, disable, or impair the service. You may not attempt to gain unauthorized access to any part of the service.</p>
                                 </section>
 
                                 <section>
                                     <h3 className="font-medium text-foreground mb-2">6. Intellectual Property</h3>
-                                    <p>All content, features, and functionality of HealthConnect are owned by us and are protected by international copyright, trademark, and other intellectual property laws.</p>
+                                    <p>All content, features, and functionality of MediBridge are owned by us and are protected by international copyright, trademark, and other intellectual property laws.</p>
                                 </section>
 
                                 <section>
                                     <h3 className="font-medium text-foreground mb-2">7. Disclaimer of Warranties</h3>
-                                    <p>HealthConnect is provided "as is" without warranties of any kind. We do not guarantee that the service will be error-free or uninterrupted.</p>
+                                    <p>MediBridge is provided "as is" without warranties of any kind. We do not guarantee that the service will be error-free or uninterrupted.</p>
                                 </section>
 
                                 <section>
                                     <h3 className="font-medium text-foreground mb-2">8. Limitation of Liability</h3>
-                                    <p>HealthConnect shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the service.</p>
+                                    <p>MediBridge shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the service.</p>
                                 </section>
 
                                 <section>
                                     <h3 className="font-medium text-foreground mb-2">9. Modifications to Terms</h3>
-                                    <p>We reserve the right to modify these Terms of Service at any time. Continued use of HealthConnect after changes constitutes acceptance of the modified terms.</p>
+                                    <p>We reserve the right to modify these Terms of Service at any time. Continued use of MediBridge after changes constitutes acceptance of the modified terms.</p>
                                 </section>
 
                                 <section>
@@ -150,7 +150,7 @@ const TermsAndPrivacyPage = () => {
                             <div className="space-y-4 text-muted-foreground">
                                 <section>
                                     <h3 className="font-medium text-foreground mb-2">1. Data Collection</h3>
-                                    <p>HealthConnect is committed to protecting your privacy. We only collect and store your login information (email and password) on our servers. <strong>All health data, history, and personal metrics are stored exclusively on your local device.</strong></p>
+                                    <p>MediBridge is committed to protecting your privacy. We only collect and store your login information (email and password) on our servers. <strong>All health data, history, and personal metrics are stored exclusively on your local device.</strong></p>
                                 </section>
 
                                 <section>
@@ -216,7 +216,7 @@ const TermsAndPrivacyPage = () => {
 
                                 <section>
                                     <h3 className="font-medium text-foreground mb-2">9. Contact Us</h3>
-                                    <p>If you have any questions about this Privacy Policy, please contact us at privacy@healthconnect.com.</p>
+                                    <p>If you have any questions about this Privacy Policy, please contact us at privacy@medibridge.app.</p>
                                 </section>
                             </div>
                         </motion.div>
@@ -236,7 +236,7 @@ const TermsAndPrivacyPage = () => {
                             <div className="space-y-4 text-muted-foreground">
                                 <section>
                                     <h3 className="font-medium text-foreground mb-2">1. General Principles</h3>
-                                    <p>HealthConnect processes your data in accordance with GDPR, HIPAA, and other applicable data protection regulations. We follow the principles of data minimization, purpose limitation, and transparency in all our data processing activities.</p>
+                                    <p>MediBridge processes your data in accordance with GDPR, HIPAA, and other applicable data protection regulations. We follow the principles of data minimization, purpose limitation, and transparency in all our data processing activities.</p>
                                 </section>
 
                                 <section>
@@ -263,7 +263,7 @@ const TermsAndPrivacyPage = () => {
 
                                 <section>
                                     <h3 className="font-medium text-foreground mb-2">4. Health Data Processing</h3>
-                                    <p>HealthConnect takes a privacy-first approach to health data:</p>
+                                    <p>MediBridge takes a privacy-first approach to health data:</p>
                                     <ul className="list-disc pl-5 space-y-1 mt-2">
                                         <li>Your health metrics, history, and personal health information are processed and stored exclusively on your device</li>
                                         <li>This data is never transmitted to our servers or accessed by our staff</li>
@@ -314,7 +314,7 @@ const TermsAndPrivacyPage = () => {
                                         <li>Right to data portability</li>
                                         <li>Right to object to processing</li>
                                     </ul>
-                                    <p className="mt-2">To exercise these rights, please contact our Data Protection Officer at dpo@healthconnect.com.</p>
+                                    <p className="mt-2">To exercise these rights, please contact our Data Protection Officer at dpo@medibridge.app.</p>
                                 </section>
 
                                 <section>
@@ -322,10 +322,10 @@ const TermsAndPrivacyPage = () => {
                                     <p>Our Data Protection Officer oversees our data processing activities and can be contacted at:</p>
                                     <p className="mt-2">
                                         Data Protection Officer<br />
-                                        HealthConnect<br />
+                                        MediBridge<br />
                                         123 Health Street<br />
                                         Wellness City, 10001<br />
-                                        dpo@healthconnect.com
+                                        dpo@medibridge.app
                                     </p>
                                 </section>
 

@@ -25,7 +25,7 @@ const HomeFooter = () => {
         </div>
         
         <div className="mt-8 pt-4 border-t text-center text-sm text-foreground">
-          &copy; {new Date().getFullYear()} Health Connect. All rights reserved.
+          &copy; {new Date().getFullYear()} MediBridge. All rights reserved.
         </div>
       </div>
     </footer>

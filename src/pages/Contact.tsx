@@ -152,7 +152,7 @@ const ContactPage = () => {
         },
         {
             question: "Can I integrate with my wearable devices?",
-            answer: "Health Connect currently provides a comprehensive web-based health tracking experience. We are actively working on integrations with popular wearable devices and health apps to expand our platform capabilities."
+            answer: "MediBridge currently provides a comprehensive web-based health tracking experience. We are actively working on integrations with popular wearable devices and health apps to expand our platform capabilities."
         },
         {
             question: "How accurate are the AI recommendations?",
@@ -160,7 +160,7 @@ const ContactPage = () => {
         },
         {
             question: "Is there a mobile app available?",
-            answer: "Currently, Health Connect is a progressive web application optimized for both desktop and mobile browsers. You can add it to your home screen for an app-like experience. A dedicated native mobile app is on our roadmap."
+            answer: "Currently, MediBridge is a progressive web application optimized for both desktop and mobile browsers. You can add it to your home screen for an app-like experience. A dedicated native mobile app is on our roadmap."
         },
         {
             question: "Do you offer personalized health coaching?",

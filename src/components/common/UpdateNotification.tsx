@@ -83,7 +83,7 @@ const UpdateNotification: React.FC<UpdateNotificationProps> = ({ forceShow = fal
                                 <div className="flex-1">
                                     <h3 className="font-medium text-sm">New updates available!</h3>
                                     <p className="text-xs text-muted-foreground mt-1">
-                                        Check out the latest features and improvements we've added to HealthConnect.
+                                        Check out the latest features and improvements we've added to MediBridge.
                                     </p>
 
                                     <div className="flex justify-end gap-2 mt-3">

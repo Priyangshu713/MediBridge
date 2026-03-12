@@ -687,7 +687,7 @@ export const initiatePayment = async (amount: number, duration: string, plan: st
         // Do NOT put amount/currency here globally; Subscriptions reject it.
         const options: any = {
             key: import.meta.env.VITE_RAZORPAY_KEY, // Your Razorpay key
-            name: 'Health Connect',
+            name: 'MediBridge',
             handler: async (response: any) => {
                 // Fetch the absolute newest token right before verifying to avoid closure staleness
                 const currentToken = localStorage.getItem('token');
@@ -755,7 +755,7 @@ export const initiatePayment = async (amount: number, duration: string, plan: st
                 plan: plan,
             };
             options.prefill = {
-                name: 'Health Connect User',
+                name: 'MediBridge User',
                 email: localStorage.getItem('userEmail') || '',
                 contact: localStorage.getItem('userPhone') || '',
             };

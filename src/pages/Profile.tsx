@@ -56,12 +56,12 @@ const Profile = () => {
 
           toast({
             title: "Login successful",
-            description: `Welcome back to HealthConnect${formattedName ? ', ' + formattedName : ''}!`,
+            description: `Welcome back to MediBridge${formattedName ? ', ' + formattedName : ''}!`,
           });
         } else {
           toast({
             title: "Login successful",
-            description: "Welcome back to HealthConnect!",
+            description: "Welcome back to MediBridge!",
           });
         }
 

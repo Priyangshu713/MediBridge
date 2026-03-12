@@ -162,7 +162,7 @@ const SignupForm = () => {
         title: wasDeleted ? "Account reactivated" : "Account created successfully",
         description: wasDeleted
           ? "Your previously deleted account has been reactivated."
-          : "Welcome to HealthConnect!",
+          : "Welcome to MediBridge!",
       });
 
       // Navigate to profile page
@@ -203,7 +203,7 @@ const SignupForm = () => {
 
       toast({
         title: "Account connected successfully",
-        description: "Welcome to HealthConnect via Google!",
+        description: "Welcome to MediBridge via Google!",
       });
 
       navigate('/profile', { state: { justLoggedIn: true } });

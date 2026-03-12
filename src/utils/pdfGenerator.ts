@@ -217,7 +217,7 @@ export const generatePDF = async (
         doc.setFontSize(8);
         doc.setTextColor(80, 80, 80);
         doc.text(
-            `Health Connect - Confidential Patient Data - Page ${i} of ${totalPages}`,
+            `MediBridge - Confidential Patient Data - Page ${i} of ${totalPages}`,
             pageWidth / 2,
             pageHeight - 8,
             { align: 'center' }

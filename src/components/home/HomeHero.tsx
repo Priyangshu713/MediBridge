@@ -83,7 +83,7 @@ const HomeHero = () => {
         title={animatedTitle}
         subtitle={
           <p className="text-base md:text-lg max-w-md md:max-w-xl mx-auto text-center">
-            Don't let preventable health issues catch you off guard. Join thousands who have unlocked the secret to longevity and vitality with Health Connect.
+            Don't let preventable health issues catch you off guard. Join thousands who have unlocked the secret to longevity and vitality with MediBridge.
           </p>
         }
         height={isMobile ? "h-[96vh]" : "h-screen"}

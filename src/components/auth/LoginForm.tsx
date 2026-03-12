@@ -74,7 +74,7 @@ const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
       // Show success toast
       toast({
         title: "Login successful",
-        description: "Welcome back to HealthConnect!",
+        description: "Welcome back to MediBridge!",
       });
 
       // Call the onLoginSuccess callback if provided
@@ -117,7 +117,7 @@ const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 
       toast({
         title: "Login successful",
-        description: "Welcome back to HealthConnect via Google!",
+        description: "Welcome back to MediBridge via Google!",
       });
 
       if (onLoginSuccess) onLoginSuccess();
