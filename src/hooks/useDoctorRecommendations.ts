@@ -1,7 +1,6 @@
 
 import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { HealthData } from '../types/health';
 import { Doctor } from '../types/doctor';
 import { useHealthStore } from '../store/healthStore';
 
