@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { Doctor } from '@/types/doctor';
-import { sampleDoctors } from '@/data/sampleDoctors';
+
+const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000/api';
 
 export function useDoctorDetails(doctorId: string | undefined) {
   const [doctor, setDoctor] = useState<Doctor | null>(null);
@@ -9,29 +10,38 @@ export function useDoctorDetails(doctorId: string | undefined) {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    console.log(`Fetching details for doctor ID: ${doctorId}`);
     const fetchDoctorDetails = async () => {
       if (!doctorId) {
         setIsLoading(false);
         setError(new Error('Doctor ID is required'));
         return;
       }
-      
+
       setIsLoading(true);
-      
+
       try {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Find doctor in sample data
-        const foundDoctor = sampleDoctors.find(d => d._id === doctorId);
-        
+        // Fetch all doctors and find the one with the matching ID
+        const response = await fetch(`${API_URL}/auth/getAlldoctor`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch doctors');
+        }
+
+        const data = await response.json();
+        const allDoctors: Doctor[] = data.allDoctor || [];
+        const foundDoctor = allDoctors.find(d => d._id === doctorId);
+
         if (foundDoctor) {
           setDoctor(foundDoctor);
         } else {
           setError(new Error('Doctor not found'));
         }
-        
+
         setIsLoading(false);
       } catch (err) {
         console.error('Error fetching doctor details:', err);
@@ -39,7 +49,7 @@ export function useDoctorDetails(doctorId: string | undefined) {
         setIsLoading(false);
       }
     };
-    
+
     fetchDoctorDetails();
   }, [doctorId]);
 

@@ -48,31 +48,42 @@ const sampleMessages: Message[] = [
 
 const Inbox: React.FC = () => {
   const { currentDoctor } = useDoctorAuth();
-  const [messages, setMessages] = useState<Message[]>(sampleMessages);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Replace with real API endpoint
+    if (!currentDoctor) return;
+
+    const doctorEmail = currentDoctor.contactInfo?.email || (currentDoctor as any).email;
+    if (!doctorEmail) return;
+
     const fetchMessages = async () => {
+      setIsLoading(true);
       try {
         const response = await fetch(`${API_URL}/auth/getAllmessage`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ doctorEmail: currentDoctor?.contactInfo?.email }),
+          body: JSON.stringify({ doctorEmail }),
         });
         const data = await response.json();
-        setMessages(data.allMessges as Message[]);
+        if (data.allMessges && Array.isArray(data.allMessges)) {
+          setMessages(data.allMessges as Message[]);
+        } else {
+          setMessages([]);
+        }
       } catch (error) {
-        // Demo fallback
+        console.error('Error fetching messages:', error);
         setMessages(sampleMessages);
-
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchMessages();
-  }, []);
+  }, [currentDoctor]);
 
   const handleReply = (email: string, subject: string) => {
     const mailto = `mailto:${email}?subject=${encodeURIComponent('Re: ' + subject)}`;
