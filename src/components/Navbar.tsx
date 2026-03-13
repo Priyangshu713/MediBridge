@@ -12,6 +12,7 @@ import DoctorMenuNavigation from './DoctorMenuNavigation';
 import AccountSettings from '@/components/settings/AccountSettings';
 import ChangelogDialog from '@/components/common/ChangelogDialog';
 import { getUserProfile } from '@/api/auth';
+import { getGravatarUrl } from '@/utils/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -380,16 +381,12 @@ const Navbar = () => {
                     aria-label="User menu"
                   >
                     <Avatar className="h-8 w-8 bg-primary text-white">
-                      {userProfileImage ? (
-                        <AvatarImage
-                          src={userProfileImage}
-                          alt="Profile"
-                          className="avatar-image"
-                          key={`avatar-${Date.now()}`}
-                        />
-                      ) : (
-                        <AvatarFallback>{getUserInitials()}</AvatarFallback>
-                      )}
+                      <AvatarImage
+                        src={userProfileImage || getGravatarUrl(userEmail, 64)}
+                        alt="Profile"
+                        className="avatar-image"
+                      />
+                      <AvatarFallback>{getUserInitials()}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>

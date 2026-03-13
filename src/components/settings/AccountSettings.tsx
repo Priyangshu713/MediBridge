@@ -18,6 +18,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getGravatarUrl } from '@/utils/avatar';
 import { useToast } from '@/components/ui/use-toast';
 import { getUserProfile, updateUserProfile, synchronizeTier, updateProfileImage, deleteUserAccount, cancelSubscription, getSubscriptionStatus } from '@/api/auth';
 import { useHealthStore, GeminiTier } from '@/store/healthStore';
@@ -692,13 +693,14 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ isOpen, onClose }) =>
                                         <div className="flex flex-col items-center gap-3 py-2">
                                             <div className="relative">
                                                 <Avatar className="h-32 w-32 border-2 border-primary/20 rounded-2xl">
-                                                    {profileImage ? (
-                                                        <AvatarImage src={profileImage} alt="Profile" className="rounded-2xl object-cover" />
-                                                    ) : (
-                                                        <AvatarFallback className="bg-primary/10 text-primary text-4xl rounded-2xl">
-                                                            {profileData?.name?.charAt(0).toUpperCase() || <User className="h-12 w-12" />}
-                                                        </AvatarFallback>
-                                                    )}
+                                                    <AvatarImage
+                                                        src={profileImage || getGravatarUrl(profileData?.email || '', 256)}
+                                                        alt="Profile"
+                                                        className="rounded-2xl object-cover"
+                                                    />
+                                                    <AvatarFallback className="bg-primary/10 text-primary text-4xl rounded-2xl">
+                                                        {profileData?.name?.charAt(0).toUpperCase() || <User className="h-12 w-12" />}
+                                                    </AvatarFallback>
                                                 </Avatar>
 
                                                 <div className="absolute -bottom-2 -right-2 flex gap-1">
