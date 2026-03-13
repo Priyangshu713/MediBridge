@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Bot, Zap, Sparkles, Check, ChevronDown, ChevronUp, Info, Clock, Star, Crown, Shield, Lock } from 'lucide-react';
 import { GeminiTier } from '@/store/healthStore';
 import GeminiTierBenefits from './GeminiTierBenefits';
-import { initiatePayment, cancelSubscription } from "@/api/auth";
+import { initiatePayment, cancelSubscription, startTrialOnServer } from "@/api/auth";
 import { useNavigate } from 'react-router-dom';
 
 interface SubscriptionPlansDialogProps {
@@ -223,7 +223,7 @@ const SubscriptionPlansDialog: React.FC<SubscriptionPlansDialogProps> = ({
     await initiatePayment(pricing.amount, billingCycle, tier, billingCycle);
   };
 
-  const handleStartTrial = () => {
+  const handleStartTrial = async () => {
     if (hasUsedTrial) {
       toast({
         title: "Trial Already Used",
@@ -233,28 +233,41 @@ const SubscriptionPlansDialog: React.FC<SubscriptionPlansDialogProps> = ({
       return;
     }
 
-    localStorage.setItem('geminiTier', 'pro');
-    localStorage.setItem('billingCycle', 'trial');
-    localStorage.setItem('proTrialUsed', 'true');
+    try {
+      const result = await startTrialOnServer();
 
-    const trialEnd = new Date();
-    trialEnd.setDate(trialEnd.getDate() + 3);
-    localStorage.setItem('trialEndDate', trialEnd.toISOString());
+      if (!result.success) {
+        // Server rejected the trial (already used)
+        setHasUsedTrial(true);
+        localStorage.setItem('proTrialUsed', 'true');
+        toast({
+          title: "Trial Already Used",
+          description: result.message || "You've already used your free trial.",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    window.dispatchEvent(
-      new CustomEvent('geminiTierChanged', {
-        detail: { tier: 'pro' }
-      })
-    );
+      // Server confirmed — update local state
+      setCurrentTier('pro');
+      setCurrentBillingCycle('trial');
+      setHasUsedTrial(true);
 
-    onSelectTier('pro');
+      onSelectTier('pro');
 
-    toast({
-      title: "🎉 Pro Trial Activated!",
-      description: "You have 3 days of free Pro access. Enjoy all premium features!",
-    });
+      toast({
+        title: "🎉 Pro Trial Activated!",
+        description: "You have 3 days of free Pro access. Enjoy all premium features!",
+      });
 
-    onClose();
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Could not start trial. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const toggleBillingOptions = () => {

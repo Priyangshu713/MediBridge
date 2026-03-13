@@ -316,40 +316,8 @@ export const updateUserTier = async (tier: 'free' | 'lite' | 'pro') => {
  * @param {string} tier - The tier to update to (free, lite, or pro)
  * @returns {Promise<Object>} Updated user data
  */
-export const debugUpdateUserTier = async (tier: 'free' | 'lite' | 'pro') => {
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-
-        throw new Error('No authentication token found');
-    }
-
-
-
-    try {
-        const response = await fetch(`${API_URL}/auth/tier-debug`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ tier }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            console.error('Debug: Error updating tier:', data);
-            throw new Error(data.message || 'Failed to update user tier (debug)');
-        }
-
-
-        return data;
-    } catch (error) {
-        console.error('Debug: Error in updateUserTier API call:', error);
-        throw error;
-    }
-};
+// debugUpdateUserTier has been removed for security reasons.
+// Tier upgrades must go through the Razorpay payment verification flow.
 
 /**
  * Logout user - clears local storage
@@ -360,6 +328,10 @@ export const logoutUser = () => {
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userName');
     localStorage.removeItem('geminiTier');
+    // Clear ALL subscription-related keys to prevent stale state on next login
+    localStorage.removeItem('billingCycle');
+    localStorage.removeItem('proTrialUsed');
+    localStorage.removeItem('trialEndDate');
 };
 
 /**
@@ -392,43 +364,45 @@ export const isAuthenticated = () => {
  * This ensures the database and local storage have the same tier value
  * @returns {Promise<Object>} Updated user data
  */
-export const synchronizeTier = async () => {
+/**
+ * Synchronize user tier — READS FROM BACKEND and writes to localStorage.
+ * The backend is ALWAYS the source of truth for subscription state.
+ * This also auto-expires stale subscriptions server-side.
+ */
+export const synchronizeTier = async (): Promise<string> => {
+    const token = localStorage.getItem('token');
+    if (!token) return 'free';
+
     try {
-        // Get current tier from local storage
-        const currentTier = localStorage.getItem('geminiTier') || 'free';
-
-        // Get user token
-        const token = localStorage.getItem('token');
-
-        if (!token) {
-            console.error('No authentication token found when synchronizing tier');
-            throw new Error('No authentication token found');
-        }
-
-
-
-        // Update tier in database
-        const response = await fetch(`${API_URL}/auth/tier`, {
-            method: 'PUT',
+        const response = await fetch(`${API_URL}/payment/subscription-status`, {
+            method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ tier: currentTier }),
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
-            console.error('Error synchronizing tier:', data);
-            throw new Error(data.message || 'Failed to synchronize tier');
+            console.warn('Could not fetch subscription status from server, keeping existing tier.');
+            return localStorage.getItem('geminiTier') || 'free';
         }
 
+        const data = await response.json();
+        const serverTier: string = data.tier || 'free';
 
-        return data;
+        // Write the server's answer into localStorage (not the other way around!)
+        localStorage.setItem('geminiTier', serverTier);
+        if (data.subscription?.billingCycle) {
+            localStorage.setItem('billingCycle', data.subscription.billingCycle);
+        } else {
+            localStorage.removeItem('billingCycle');
+        }
+
+        window.dispatchEvent(new CustomEvent('geminiTierChanged', { detail: { tier: serverTier } }));
+        return serverTier;
     } catch (error) {
-        console.error('Error in synchronizeTier API call:', error);
-        throw error;
+        console.error('Error in synchronizeTier:', error);
+        return localStorage.getItem('geminiTier') || 'free';
     }
 };
 
@@ -935,6 +909,56 @@ export const loginWithGoogle = async (credential: string) => {
     if (!response.ok) {
         throw new Error(data.message || 'Google Login failed');
     }
+
+    return data;
+};
+
+/**
+ * Start a 3-day free Pro trial — enforced on the server (one trial per user lifetime).
+ * @returns {Promise<Object>} Subscription data including tier and endDate
+ */
+export const startTrialOnServer = async (): Promise<{
+    success: boolean;
+    tier: string;
+    trialAlreadyUsed?: boolean;
+    message?: string;
+    subscription?: { plan: string; billingCycle: string; endDate: string; daysLeft: number };
+}> => {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+        throw new Error('No authentication token found. Please log in first.');
+    }
+
+    const response = await fetch(`${API_URL}/payment/start-trial`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        // Return structured error so UI can handle it gracefully
+        return {
+            success: false,
+            tier: localStorage.getItem('geminiTier') || 'free',
+            trialAlreadyUsed: data.trialAlreadyUsed || false,
+            message: data.message || 'Failed to start trial',
+        };
+    }
+
+    // Server confirmed trial started — sync localStorage
+    localStorage.setItem('geminiTier', data.tier || 'pro');
+    localStorage.setItem('billingCycle', 'trial');
+    localStorage.setItem('proTrialUsed', 'true');
+    if (data.subscription?.endDate) {
+        localStorage.setItem('trialEndDate', data.subscription.endDate);
+    }
+
+    window.dispatchEvent(new CustomEvent('geminiTierChanged', { detail: { tier: data.tier } }));
 
     return data;
 };
