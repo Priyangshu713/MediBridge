@@ -44,7 +44,10 @@ const Navbar = () => {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
   const [showChangelogDialog, setShowChangelogDialog] = useState(false);
-  const [userProfileImage, setUserProfileImage] = useState<string | null>(null);
+  const [userProfileImage, setUserProfileImage] = useState<string | null>(() => {
+    // Immediately load from localStorage so Google profile photo shows on first render
+    return localStorage.getItem('userProfileImage') || null;
+  });
   const [loadingProfile, setLoadingProfile] = useState(false);
 
   const isHomePage = location.pathname === '/';
@@ -92,8 +95,12 @@ const Navbar = () => {
       if (isAuth) {
         const email = localStorage.getItem('userEmail') || '';
         setUserEmail(email);
+        // Load profile image from localStorage (set on Google login or profile update)
+        const savedImage = localStorage.getItem('userProfileImage');
+        if (savedImage) setUserProfileImage(savedImage);
       } else {
         setUserEmail('');
+        setUserProfileImage(null);
       }
 
       const isDoctorAuth = localStorage.getItem('isDoctorAuthenticated') === 'true';
@@ -172,6 +179,7 @@ const Navbar = () => {
     localStorage.removeItem('userName');
     localStorage.removeItem('token');
     localStorage.removeItem('geminiTier');
+    localStorage.removeItem('userProfileImage');
 
     // Sign out from doctor portal if active
     if (isDoctorUser || localStorage.getItem('isDoctorAuthenticated') === 'true') {

@@ -108,6 +108,11 @@ const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
       localStorage.setItem('userName', result.name);
       localStorage.setItem('token', result.token);
 
+      // Save the Google profile photo so avatars display immediately
+      if (result.profileImage) {
+        localStorage.setItem('userProfileImage', result.profileImage);
+      }
+
       if (result.tier) {
         localStorage.setItem('geminiTier', result.tier);
         setGeminiTier(result.tier);
