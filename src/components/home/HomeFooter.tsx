@@ -21,6 +21,8 @@ const HomeFooter = () => {
             <Link to="/health-report" className="hover:text-primary transition-colors">Health Report</Link>
             <Link to="/nutrition" className="hover:text-primary transition-colors">Nutrition</Link>
             <Link to="/ai-bot" className="hover:text-primary transition-colors">AI Bot</Link>
+            <Link to="/terms-privacy?tab=privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+            <Link to="/terms-privacy?tab=terms" className="hover:text-primary transition-colors">Terms of Service</Link>
           </div>
         </div>
         
