@@ -304,6 +304,7 @@ const DoctorDetails = () => {
           onClose={() => setPaymentDialogOpen(false)}
           doctor={doctor}
           appointmentDate={selectedDate}
+          geminiTier={geminiTier}
           onConfirmed={handleAppointmentConfirmed}
         />
       )}

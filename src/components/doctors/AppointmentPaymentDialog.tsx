@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Calendar, CreditCard, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
+import { Calendar, CreditCard, CheckCircle, Loader2, AlertCircle, Crown } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { createAppointmentOrder, verifyAppointmentPayment } from '@/api/auth';
@@ -9,6 +9,7 @@ import { createAppointmentOrder, verifyAppointmentPayment } from '@/api/auth';
 interface AppointmentPaymentDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  geminiTier?: 'free' | 'lite' | 'pro';
   doctor: {
     _id?: string;
     id?: string;
@@ -35,6 +36,7 @@ const AppointmentPaymentDialog: React.FC<AppointmentPaymentDialogProps> = ({
   doctor,
   appointmentDate,
   onConfirmed,
+  geminiTier = 'lite',
 }) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -57,7 +59,7 @@ const AppointmentPaymentDialog: React.FC<AppointmentPaymentDialogProps> = ({
     setIsLoading(true);
     try {
       // 1. Create order on backend (backend enforces tier check)
-      const orderData = await createAppointmentOrder(doctorId, appointmentDate);
+      const orderData = await createAppointmentOrder(doctorId, appointmentDate, doctorName);
 
       // Pro users get immediate confirmation
       if (!orderData.requiresPayment) {
@@ -160,23 +162,38 @@ const AppointmentPaymentDialog: React.FC<AppointmentPaymentDialogProps> = ({
                 </div>
                 <div className="flex justify-between border-t pt-2 mt-2">
                   <span className="font-semibold">Consultation Fee</span>
-                  <span className="font-bold text-primary text-base">₹300</span>
+                  <span className="font-bold text-primary text-base">
+                    {geminiTier === 'pro' ? '₹0 (Included)' : '₹300'}
+                  </span>
                 </div>
               </div>
 
-              <div className="flex items-start gap-2 p-2.5 rounded-md bg-amber-50 border border-amber-200 text-xs text-amber-800">
-                <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                <span>This is a one-time consultation fee. Upgrade to <strong>Pro</strong> (₹399/mo) to get unlimited appointments included.</span>
-              </div>
+              {geminiTier === 'lite' ? (
+                <div className="flex items-start gap-2 p-2.5 rounded-md bg-amber-50 border border-amber-200 text-xs text-amber-800">
+                  <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                  <span>This is a one-time consultation fee. Upgrade to <strong>Pro</strong> (₹399/mo) to get unlimited appointments included.</span>
+                </div>
+              ) : (
+                <div className="flex items-start gap-2 p-2.5 rounded-md bg-blue-50 border border-blue-200 text-xs text-blue-800">
+                  <Crown className="h-4 w-4 flex-shrink-0 mt-0.5 text-blue-600" />
+                  <span>Your Pro subscription includes unlimited appointments. No additional payment required.</span>
+                </div>
+              )}
             </div>
 
             <DialogFooter className="flex flex-col sm:flex-row gap-2">
               <Button variant="outline" onClick={handleClose} className="w-full sm:w-auto">
                 Cancel
               </Button>
-              <Button onClick={handlePay} disabled={isLoading} className="w-full sm:w-auto">
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2 h-4 w-4" />}
-                Pay ₹300
+              <Button onClick={handlePay} disabled={isLoading} className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90">
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : geminiTier === 'pro' ? (
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                ) : (
+                  <CreditCard className="mr-2 h-4 w-4" />
+                )}
+                {geminiTier === 'pro' ? 'Confirm Booking' : 'Pay ₹300'}
               </Button>
             </DialogFooter>
           </>

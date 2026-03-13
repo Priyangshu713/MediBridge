@@ -966,7 +966,7 @@ export const startTrialOnServer = async (): Promise<{
 /**
  * Create a ₹300 Razorpay appointment order (Lite users) or confirm directly (Pro users).
  */
-export const createAppointmentOrder = async (doctorId: string, appointmentDate: Date) => {
+export const createAppointmentOrder = async (doctorId: string, appointmentDate: Date, doctorName: string) => {
     const token = localStorage.getItem('token');
     if (!token) throw new Error('Please log in first');
 
@@ -976,7 +976,7 @@ export const createAppointmentOrder = async (doctorId: string, appointmentDate: 
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ doctorId, appointmentDate: appointmentDate.toISOString() }),
+        body: JSON.stringify({ doctorId, appointmentDate: appointmentDate.toISOString(), doctorName }),
     });
 
     const data = await response.json();

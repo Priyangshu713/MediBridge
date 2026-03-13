@@ -14,7 +14,7 @@ import { useHealthStore, GeminiTier } from '@/store/healthStore';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Confetti from 'react-confetti';
 import SubscriptionPlansDialog from './SubscriptionPlansDialog';
-import { updateUserTier, debugUpdateUserTier, synchronizeTier } from '@/api/auth';
+import { updateUserTier, synchronizeTier } from '@/api/auth';
 
 interface GeminiTierSelectorProps {
   onToggleAI?: (enabled: boolean) => void;
