@@ -1046,7 +1046,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ isOpen, onClose }) =>
                                             </li>
                                             <li className="flex items-start">
                                                 <X className="h-4 w-4 text-destructive mr-2 mt-0.5 flex-shrink-0" />
-                                                <span><strong>Specialist Network:</strong> Lose direct booking capability with our top 1% doctors</span>
+                                                <span><strong>Priority Booking:</strong> Lose your free Consultation Credits and exclusive member rates (₹99)</span>
                                             </li>
                                             <li className="flex items-start">
                                                 <X className="h-4 w-4 text-destructive mr-2 mt-0.5 flex-shrink-0" />

@@ -38,7 +38,7 @@ const SignupForm = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { setGeminiTier } = useHealthStore();
+  const { setGeminiTier, setAppointmentCredits } = useHealthStore();
   const [accountDeleted, setAccountDeleted] = useState(false);
   const [emailToRecover, setEmailToRecover] = useState('');
   const [isRecovering, setIsRecovering] = useState(false);
@@ -154,6 +154,12 @@ const SignupForm = () => {
         setGeminiTier('free');
       }
 
+      if (result.appointmentCredits !== undefined) {
+        setAppointmentCredits(result.appointmentCredits);
+      } else {
+        setAppointmentCredits(0);
+      }
+
       // Dispatch auth event to update global state
       dispatchAuthEvent(true, email);
 
@@ -197,6 +203,12 @@ const SignupForm = () => {
       } else {
         localStorage.setItem('geminiTier', 'free');
         setGeminiTier('free');
+      }
+
+      if (result.appointmentCredits !== undefined) {
+        setAppointmentCredits(result.appointmentCredits);
+      } else {
+        setAppointmentCredits(0);
       }
 
       dispatchAuthEvent(true, result.email);

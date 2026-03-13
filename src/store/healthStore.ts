@@ -48,12 +48,14 @@ interface HealthStore {
   geminiApiKey: string | null;
   geminiModel: GeminiModelType;
   geminiTier: GeminiTier;
+  appointmentCredits: number;
   updateHealthData: (data: Partial<HealthData>) => void;
   calculateBMI: () => void;
   resetHealthData: () => void;
   setGeminiApiKey: (key: string | null) => void;
   setGeminiModel: (model: GeminiModelType) => void;
   setGeminiTier: (tier: GeminiTier) => void;
+  setAppointmentCredits: (credits: number) => void;
   setAdvancedAnalysisComplete: (analysisData: any, fullAnalysis?: AnalysisSection[]) => void;
 }
 
@@ -101,6 +103,7 @@ export const useHealthStore = create<HealthStore>()(
         geminiApiKey: envApiKey,
         geminiModel: "gemini-3.1-flash-lite-preview",
         geminiTier: 'free',
+        appointmentCredits: 0,
 
         updateHealthData: (data) =>
           set((state) => {
@@ -182,6 +185,11 @@ export const useHealthStore = create<HealthStore>()(
         setGeminiTier: (tier) =>
           set({
             geminiTier: tier
+          }),
+
+        setAppointmentCredits: (credits) =>
+          set({
+            appointmentCredits: credits
           }),
 
         setAdvancedAnalysisComplete: (analysisData, fullAnalysis) =>

@@ -125,7 +125,7 @@ const DoctorDetails = () => {
         <Button onClick={() => handleScheduleAppointment()} className="bg-purple-600 hover:bg-purple-700 text-white">
           <Zap className="mr-2 h-4 w-4" />
           Schedule Appointment
-          <span className="ml-2 text-xs bg-purple-500 px-1.5 py-0.5 rounded-full font-medium">₹300</span>
+          <span className="ml-2 text-xs bg-purple-500 px-1.5 py-0.5 rounded-full font-medium">₹299</span>
         </Button>
       );
     }
@@ -155,7 +155,7 @@ const DoctorDetails = () => {
               <AlertTitle className="text-amber-800">Free Plan</AlertTitle>
               <AlertDescription className="text-amber-700">
                 You can browse specialists freely. To book appointments, upgrade to{' '}
-                <strong>Lite (₹300/session)</strong> or <strong>Pro (unlimited included)</strong>.
+                <strong>Lite (₹299/session)</strong> or <strong>Pro (Consultation Credits included)</strong>.
               </AlertDescription>
             </Alert>
           )}

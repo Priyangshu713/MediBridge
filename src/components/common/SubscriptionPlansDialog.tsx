@@ -43,10 +43,10 @@ const planPricing: PricingMap = {
   },
   pro: {
     trial: { amount: 0, tag: '3-Day Free Trial' },
-    weekly: { amount: 149, tag: 'Includes Appointments' },
-    monthly: { amount: 399, tag: 'Most Popular · Includes Appointments' },
-    sixMonths: { amount: 1999, originalAmount: 2394, discount: '17% Off', perMonth: '₹333/month', tag: 'Includes Appointments' },
-    yearly: { amount: 3499, originalAmount: 4788, discount: '27% Off', perMonth: '₹292/month', tag: 'Best Value · Includes Appointments' },
+    weekly: { amount: 149, tag: 'Includes 1 Free Visit' },
+    monthly: { amount: 399, tag: 'Most Popular · Includes 2 Free Visits' },
+    sixMonths: { amount: 1999, originalAmount: 2394, discount: '17% Off', perMonth: '₹333/month', tag: 'Includes 15 Free Visits' },
+    yearly: { amount: 3499, originalAmount: 4788, discount: '27% Off', perMonth: '₹292/month', tag: 'Best Value · Includes 30 Free Visits' },
   }
 };
 
@@ -369,7 +369,7 @@ const SubscriptionPlansDialog: React.FC<SubscriptionPlansDialogProps> = ({
         </Button>
 
         {showBillingOptions && (
-          <div className="absolute top-full left-0 w-full bg-background border rounded-md mt-1 shadow-md z-10">
+          <div className="absolute top-full left-0 w-full bg-background border rounded-md mt-1 shadow-md z-50">
             {cycles.map(cycle => {
               const pricing = planPricing[tier]?.[cycle];
               const isCurrent = cycle === currentBillingCycle && currentTier === tier;
@@ -464,7 +464,7 @@ const SubscriptionPlansDialog: React.FC<SubscriptionPlansDialogProps> = ({
   // Render the ladder nudge
   const renderLadderNudge = () => {
     if (selectedTab !== 'lite') return null;
-    if (billingCycle !== 'sixMonths' && billingCycle !== 'yearly') return null;
+    if (billingCycle === 'trial') return null;
 
     const litePricing = planPricing.lite?.[billingCycle];
     const proPricing = planPricing.pro?.[billingCycle];
@@ -474,14 +474,17 @@ const SubscriptionPlansDialog: React.FC<SubscriptionPlansDialogProps> = ({
     const diff = proPricing.amount - litePricing.amount;
 
     return (
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2">
-        <Crown className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-        <div className="text-sm">
-          <span className="font-medium text-amber-800">
-            Upgrade to Pro for just ₹{diff} more
+      <div className="bg-amber-50 border border-amber-300 rounded-lg p-3.5 flex items-start gap-3 shadow-sm relative overflow-hidden mt-4">
+        <div className="absolute -right-4 -top-4 text-amber-500/10 rotate-12 pointer-events-none">
+          <Sparkles size={64} />
+        </div>
+        <Crown className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0 relative z-10" />
+        <div className="text-sm relative z-10">
+          <span className="font-bold text-amber-900 block mb-1">
+            Wait! Doctor visits cost ₹299 each on Lite.
           </span>
-          <p className="text-amber-700 text-xs mt-0.5">
-            Get premium AI features, advanced health reports, and meal tracking — all for a small upgrade.
+          <p className="text-amber-800 text-xs">
+            Upgrade to <strong className="font-semibold text-amber-950">Pro</strong> for just <strong className="font-bold text-base text-amber-950">₹{diff}</strong> more on this cycle and get <strong className="underline underline-offset-2">FREE Consultation Credits</strong>! Plus, keep visiting for just <strong className="font-bold">₹99</strong> if you run out — the best value for members.
           </p>
         </div>
       </div>

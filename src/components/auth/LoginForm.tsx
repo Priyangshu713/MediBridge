@@ -37,7 +37,7 @@ const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { setGeminiTier } = useHealthStore();
+  const { setGeminiTier, setAppointmentCredits } = useHealthStore();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -66,6 +66,10 @@ const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
       if (result.tier) {
         localStorage.setItem('geminiTier', result.tier);
         setGeminiTier(result.tier);
+      }
+
+      if (result.appointmentCredits !== undefined) {
+        setAppointmentCredits(result.appointmentCredits);
       }
 
       // Dispatch auth event for real-time UI updates
@@ -116,6 +120,10 @@ const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
       if (result.tier) {
         localStorage.setItem('geminiTier', result.tier);
         setGeminiTier(result.tier);
+      }
+
+      if (result.appointmentCredits !== undefined) {
+        setAppointmentCredits(result.appointmentCredits);
       }
 
       dispatchAuthEvent(true, result.email);

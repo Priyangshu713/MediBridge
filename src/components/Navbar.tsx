@@ -28,7 +28,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { healthData, geminiTier } = useHealthStore();
+  const { healthData, geminiTier, setAppointmentCredits } = useHealthStore();
   const isMobile = useIsMobile();
 
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -273,6 +273,9 @@ const Navbar = () => {
         if (data.profileImage) {
           setUserProfileImage(data.profileImage);
         }
+        if (data.appointmentCredits !== undefined) {
+          setAppointmentCredits(data.appointmentCredits);
+        }
       } catch (error) {
         console.error('Error fetching user profile image:', error);
       } finally {
@@ -295,6 +298,9 @@ const Navbar = () => {
             setUserProfileImage(data.profileImage);
           } else {
             setUserProfileImage(null);
+          }
+          if (data.appointmentCredits !== undefined) {
+            setAppointmentCredits(data.appointmentCredits);
           }
         } catch (error) {
           console.error('Error fetching user profile image on update:', error);

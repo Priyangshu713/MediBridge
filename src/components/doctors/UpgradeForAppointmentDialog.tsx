@@ -42,7 +42,7 @@ const UpgradeForAppointmentDialog: React.FC<UpgradeForAppointmentDialogProps> = 
               <div>
                 <p className="font-semibold text-purple-900 text-sm">Lite Plan — ₹149/month</p>
                 <p className="text-xs text-purple-700 mt-0.5">
-                  All AI tools + schedule appointments for just <strong>₹300 per session</strong>.
+                  All AI tools + schedule appointments for just <strong>₹299 per session</strong>.
                 </p>
               </div>
             </div>
@@ -53,7 +53,7 @@ const UpgradeForAppointmentDialog: React.FC<UpgradeForAppointmentDialogProps> = 
               <div>
                 <p className="font-semibold text-amber-900 text-sm">Pro Plan — ₹399/month</p>
                 <p className="text-xs text-amber-700 mt-0.5">
-                  Unlimited appointments <strong>included</strong> — no per-session fee. Best for regular care.
+                  Free Consultation Credits <strong>included</strong> — then just ₹99/visit. Best for regular care.
                 </p>
               </div>
             </div>

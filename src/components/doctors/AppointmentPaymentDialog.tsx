@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar, CreditCard, CheckCircle, Loader2, AlertCircle, Crown, FileText, ArrowUpCircle, Download, FileUp } from 'lucide-react';
+import { Calendar, CreditCard, CheckCircle, Loader2, AlertCircle, Crown, FileText, ArrowUpCircle, Download, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useHealthStore } from '@/store/healthStore';
@@ -40,7 +40,7 @@ const AppointmentPaymentDialog: React.FC<AppointmentPaymentDialogProps> = ({
   onConfirmed,
 }) => {
   const { toast } = useToast();
-  const { healthData } = useHealthStore();
+  const { healthData, appointmentCredits, setAppointmentCredits } = useHealthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<'confirm' | 'processing' | 'success'>('confirm');
 
@@ -55,6 +55,7 @@ const AppointmentPaymentDialog: React.FC<AppointmentPaymentDialogProps> = ({
   const doctorId = doctor._id || doctor.id || '';
   const doctorName = `Dr. ${doctor.firstName} ${doctor.lastName}`;
   const isPro = geminiTier === 'pro';
+  const hasCredits = isPro && appointmentCredits > 0;
 
   // Pre-fill message when dialog opens
   useEffect(() => {
@@ -163,8 +164,12 @@ const AppointmentPaymentDialog: React.FC<AppointmentPaymentDialogProps> = ({
       // 1. Create appointment order on backend (tier check enforced server-side)
       const orderData = await createAppointmentOrder(doctorId, appointmentDate, doctorName);
 
-      // Pro users → appointment confirmed immediately, send message
+      // Pro users with credits → appointment confirmed immediately, send message
       if (!orderData.requiresPayment) {
+        // Sync new credits to frontend
+        if (orderData.appointmentCredits !== undefined) {
+          setAppointmentCredits(orderData.appointmentCredits);
+        }
         await sendMessageToDoctor();
         setStep('success');
         toast({ title: '✅ Appointment Confirmed!', description: `Your appointment with ${doctorName} is booked and message sent.` });
@@ -330,21 +335,49 @@ const AppointmentPaymentDialog: React.FC<AppointmentPaymentDialogProps> = ({
                   <div className="flex justify-between border-t pt-2 mt-2">
                     <span className="font-semibold">Consultation Fee</span>
                     <span className="font-bold text-primary text-base">
-                      {isPro ? '₹0 (Included)' : '₹300'}
+                      {hasCredits ? '₹0 (1 Credit)' : isPro ? '₹99 (Member Rate)' : '₹299'}
                     </span>
                   </div>
                 </div>
 
                 {/* ── Tier info banner ── */}
                 {isPro ? (
-                  <div className="flex items-start gap-2 p-2.5 rounded-md bg-blue-50 border border-blue-200 text-xs text-blue-800">
-                    <Crown className="h-4 w-4 flex-shrink-0 mt-0.5 text-blue-600" />
-                    <span>Your Pro subscription includes unlimited appointments. No additional payment required.</span>
-                  </div>
+                  hasCredits ? (
+                    <div className="flex items-start gap-2 p-2.5 rounded-md bg-blue-50 border border-blue-200 text-xs text-blue-800">
+                      <Crown className="h-4 w-4 flex-shrink-0 mt-0.5 text-blue-600" />
+                      <span>You have {appointmentCredits} Consultation Credit{appointmentCredits > 1 ? 's' : ''} remaining. No additional payment required.</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2 p-3.5 rounded-md bg-amber-50 border border-amber-300 relative overflow-hidden shadow-sm mt-2">
+                      <div className="flex items-start gap-2 text-sm text-amber-950 z-10">
+                        <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5 text-amber-600" />
+                        <span className="font-bold">You are out of Consultation Credits!</span>
+                      </div>
+                      <p className="text-xs text-amber-800 pl-6 z-10 leading-relaxed">
+                        Your current Pro plan covers a set number of free visits. Because you've used them all, you can proceed at the exclusive member rate of <strong>₹99</strong> per visit (67% discount).
+                      </p>
+                    </div>
+                  )
                 ) : (
-                  <div className="flex items-start gap-2 p-2.5 rounded-md bg-amber-50 border border-amber-200 text-xs text-amber-800">
-                    <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                    <span>This is a one-time consultation fee. Upgrade to <strong>Pro</strong> (₹399/mo) to get unlimited appointments included.</span>
+                  <div className="flex flex-col gap-2 p-3.5 rounded-md bg-amber-50 border border-amber-300 relative overflow-hidden shadow-sm mt-2">
+                    <div className="absolute -right-3 -top-3 text-amber-500/10 rotate-12 pointer-events-none">
+                      <Sparkles size={64} />
+                    </div>
+                    <div className="flex items-start gap-2 text-sm text-amber-950 z-10">
+                      <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5 text-amber-600" />
+                      <span className="font-bold">Wait! You're paying ₹299 for a single visit!</span>
+                    </div>
+                    <p className="text-xs text-amber-800 pl-6 z-10 leading-relaxed">
+                      Why pay per visit? Upgrade to <strong className="font-bold text-amber-950">Pro for ₹399/mo</strong> and get <strong className="uppercase underline underline-offset-2">FREE Consultation Credits</strong>, plus full AI medical analysis.
+                    </p>
+                    <div className="pl-6 mt-1 z-10">
+                      <Button variant="outline" size="sm" className="h-8 text-xs border-amber-300 bg-white text-amber-800 hover:bg-amber-100 font-semibold" onClick={(e) => {
+                        e.preventDefault();
+                        toast({ title: "To Upgrade", description: "Close this window and click 'Upgrade to Pro' in the main menu."});
+                      }}>
+                        How to Upgrade
+                      </Button>
+                    </div>
                   </div>
                 )}
 
@@ -398,16 +431,18 @@ const AppointmentPaymentDialog: React.FC<AppointmentPaymentDialogProps> = ({
               >
                 {isLoading || pdfGenerating ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : isPro ? (
+                ) : hasCredits ? (
                   <CheckCircle className="mr-2 h-4 w-4" />
                 ) : (
                   <CreditCard className="mr-2 h-4 w-4" />
                 )}
                 {pdfGenerating
                   ? 'Generating PDF...'
-                  : isPro
+                  : hasCredits
                     ? 'Confirm & Send'
-                    : 'Pay ₹300 & Send'}
+                    : isPro 
+                      ? 'Pay ₹99 & Send' 
+                      : 'Pay ₹299 & Send'}
               </Button>
             </DialogFooter>
           </>

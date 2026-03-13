@@ -34,8 +34,8 @@ const DoctorFinder = () => {
   } = useDoctorRecommendations(filters);
 
   useEffect(() => {
-    // Check if user is Pro tier
-    if (geminiTier !== 'pro') {
+    // Check if user is Free tier, they must upgrade to at least Lite to see doctors
+    if (geminiTier === 'free') {
       setSubscriptionDialogOpen(true);
     }
     
@@ -190,12 +190,12 @@ const DoctorFinder = () => {
         isOpen={subscriptionDialogOpen}
         onClose={() => {
           setSubscriptionDialogOpen(false);
-          if (geminiTier !== 'pro') {
+          if (geminiTier === 'free') {
             navigate('/profile');
           }
         }}
         onSelectTier={handleSelectTier}
-        initialTab="pro"
+        initialTab="lite"
       />
     </div>
   );
