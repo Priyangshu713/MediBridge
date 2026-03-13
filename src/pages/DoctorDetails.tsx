@@ -11,7 +11,6 @@ import { Calendar, CheckCircle, Clock, Crown, Lock, MapPin, MessageSquare, Phone
 import { useToast } from '@/hooks/use-toast';
 import { useHealthStore } from '@/store/healthStore';
 import { useDoctorDetails } from '@/hooks/useDoctorDetails';
-import { ContactDoctorDialog } from '@/components/doctors/ContactDoctorDialog';
 import { DoctorReviews } from '@/components/doctors/DoctorReviews';
 import { DoctorSchedule } from '@/components/doctors/DoctorSchedule';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,7 +24,6 @@ const DoctorDetails = () => {
   const { toast } = useToast();
   const { geminiTier, healthData } = useHealthStore();
 
-  const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -65,10 +63,14 @@ const DoctorDetails = () => {
     }
   };
 
-  /** Called after appointment is confirmed. Opens message dialog. */
+  /** Called after appointment is confirmed and message sent */
   const handleAppointmentConfirmed = () => {
     setPaymentDialogOpen(false);
-    setContactDialogOpen(true);
+    setSelectedDate(undefined);
+    toast({
+      title: 'Booking Complete',
+      description: 'Your appointment has been confirmed and your message sent to the doctor.',
+    });
   };
 
   if (isLoading) {
@@ -306,16 +308,6 @@ const DoctorDetails = () => {
           appointmentDate={selectedDate}
           geminiTier={geminiTier}
           onConfirmed={handleAppointmentConfirmed}
-        />
-      )}
-
-      {/* Contact/message dialog — opened after appointment confirmed */}
-      {doctor && (
-        <ContactDoctorDialog
-          isOpen={contactDialogOpen}
-          onClose={() => { setContactDialogOpen(false); setSelectedDate(undefined); }}
-          doctor={doctor}
-          appointmentDate={selectedDate}
         />
       )}
     </div>
