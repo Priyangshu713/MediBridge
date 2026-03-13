@@ -254,7 +254,7 @@ const Navbar = () => {
     { path: '/health-report', label: 'Reports', icon: <Heart className="mr-2 h-4 w-4" /> },
     { path: '/nutrition', label: 'Diet', icon: <Apple className="mr-2 h-4 w-4" /> },
     { path: '/wellness', label: 'Wellness', icon: <Sparkles className="mr-2 h-4 w-4" /> },
-    ...(isDoctorUser ? [] : [{ path: '/doctor-finder', label: 'Doctors', icon: <UserRound className="mr-2 h-4 w-4" />, proOnly: true }]),
+    ...(isDoctorUser ? [] : [{ path: '/doctor-finder', label: 'Doctors', icon: <UserRound className="mr-2 h-4 w-4" /> }]),
     { path: '/ai-bot', label: 'AI', icon: <Bot className="mr-2 h-4 w-4" /> },
     { path: '/about', label: 'About', icon: <Info className="mr-2 h-4 w-4" /> },
     //  Temporarily disabled Doctor Portal
@@ -341,9 +341,6 @@ const Navbar = () => {
 
         <div className="hidden md:flex items-center space-x-1">
           {navItems.map((item, index) => {
-            if (item.proOnly && !isProUser) {
-              return null;
-            }
 
             if (item.path === '/health-report' && !healthData.completedProfile) {
               return null;
@@ -542,9 +539,6 @@ const Navbar = () => {
             )}
 
             {navItems.map((item) => {
-              if (item.proOnly && !isProUser) {
-                return null;
-              }
 
               if (item.path === '/health-report' && !healthData.completedProfile) {
                 return null;

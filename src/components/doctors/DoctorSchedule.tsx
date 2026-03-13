@@ -3,17 +3,18 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Doctor } from '@/types/doctor';
-import { AlertCircle, Clock } from 'lucide-react';
+import { AlertCircle, Clock, Crown, Lock, Zap } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 
 interface DoctorScheduleProps {
   doctor: Doctor;
+  geminiTier?: 'free' | 'lite' | 'pro';
   onRequestConsultation?: (date: Date) => void;
 }
 
-export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor, onRequestConsultation }) => {
+export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor, geminiTier = 'free', onRequestConsultation }) => {
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   
@@ -143,7 +144,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor, onReques
             className="rounded-md border"
           />
           
-          <div className="mt-6 flex flex-col space-y-4">
+            <div className="mt-6 flex flex-col space-y-4">
             {selectedDate ? (
               <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-md flex items-start gap-3">
                 <AlertCircle className="h-5 w-5 text-green-500 mt-0.5" />
@@ -159,20 +160,46 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor, onReques
             ) : (
               <Alert className="bg-muted/50">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Green dates indicate available appointment days.
-                </AlertDescription>
+                <AlertDescription>Green dates indicate available appointment days.</AlertDescription>
               </Alert>
             )}
-            
-            <Button 
-              onClick={handleRequestConsultation}
-              disabled={!selectedDate}
-              className="w-full"
-              aria-label="Schedule appointment for selected date"
-            >
-              Schedule Appointment
-            </Button>
+
+            {/* Tier-aware Schedule Appointment button */}
+            {geminiTier === 'free' ? (
+              <Button
+                onClick={() => selectedDate && onRequestConsultation?.(selectedDate)}
+                disabled={!selectedDate}
+                variant="outline"
+                className="w-full border-dashed border-amber-400 text-amber-700 hover:bg-amber-50"
+                aria-label="Upgrade to schedule appointment"
+              >
+                <Lock className="mr-2 h-4 w-4" />
+                Schedule Appointment
+                <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">Upgrade</span>
+              </Button>
+            ) : geminiTier === 'lite' ? (
+              <Button
+                onClick={() => selectedDate && onRequestConsultation?.(selectedDate)}
+                disabled={!selectedDate}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                aria-label="Schedule appointment — ₹300 fee"
+              >
+                <Zap className="mr-2 h-4 w-4" />
+                Schedule Appointment
+                <span className="ml-2 text-xs bg-purple-500 px-1.5 py-0.5 rounded-full font-medium">₹300</span>
+              </Button>
+            ) : (
+              <Button
+                onClick={() => selectedDate && onRequestConsultation?.(selectedDate)}
+                disabled={!selectedDate}
+                className="w-full"
+                aria-label="Schedule appointment — included in Pro"
+              >
+                <Crown className="mr-2 h-4 w-4" />
+                Schedule Appointment
+                <span className="ml-2 text-xs bg-primary/80 px-1.5 py-0.5 rounded-full font-medium">Included</span>
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

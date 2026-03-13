@@ -43,10 +43,10 @@ const planPricing: PricingMap = {
   },
   pro: {
     trial: { amount: 0, tag: '3-Day Free Trial' },
-    weekly: { amount: 79 },
-    monthly: { amount: 199, tag: 'Most Popular' },
-    sixMonths: { amount: 899, originalAmount: 1194, discount: '25% Off', perMonth: '₹150/month' },
-    yearly: { amount: 1499, originalAmount: 2388, discount: '37% Off', perMonth: '₹125/month', tag: 'Best Value' },
+    weekly: { amount: 149, tag: 'Includes Appointments' },
+    monthly: { amount: 399, tag: 'Most Popular · Includes Appointments' },
+    sixMonths: { amount: 1999, originalAmount: 2394, discount: '17% Off', perMonth: '₹333/month', tag: 'Includes Appointments' },
+    yearly: { amount: 3499, originalAmount: 4788, discount: '27% Off', perMonth: '₹292/month', tag: 'Best Value · Includes Appointments' },
   }
 };
 

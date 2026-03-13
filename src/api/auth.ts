@@ -962,3 +962,50 @@ export const startTrialOnServer = async (): Promise<{
 
     return data;
 };
+
+/**
+ * Create a ₹300 Razorpay appointment order (Lite users) or confirm directly (Pro users).
+ */
+export const createAppointmentOrder = async (doctorId: string, appointmentDate: Date) => {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('Please log in first');
+
+    const response = await fetch(`${API_URL}/payment/create-appointment-order`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ doctorId, appointmentDate: appointmentDate.toISOString() }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to create appointment order');
+    return data;
+};
+
+/**
+ * Verify the Razorpay payment signature and confirm the appointment in the database.
+ */
+export const verifyAppointmentPayment = async (
+    razorpayOrderId: string,
+    razorpayPaymentId: string,
+    razorpaySignature: string,
+    appointmentId: string,
+) => {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('Please log in first');
+
+    const response = await fetch(`${API_URL}/payment/verify-appointment-payment`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ razorpayOrderId, razorpayPaymentId, razorpaySignature, appointmentId }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Payment verification failed');
+    return data;
+};

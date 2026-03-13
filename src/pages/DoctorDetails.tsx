@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
@@ -7,84 +7,68 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, CheckCircle, Clock, MapPin, MessageSquare, Phone, Star, ThumbsUp, User } from 'lucide-react';
+import { Calendar, CheckCircle, Clock, Crown, Lock, MapPin, MessageSquare, Phone, Star, ThumbsUp, User, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useHealthStore } from '@/store/healthStore';
 import { useDoctorDetails } from '@/hooks/useDoctorDetails';
-import SubscriptionPlansDialog from '@/components/common/SubscriptionPlansDialog';
 import { ContactDoctorDialog } from '@/components/doctors/ContactDoctorDialog';
 import { DoctorReviews } from '@/components/doctors/DoctorReviews';
 import { DoctorSchedule } from '@/components/doctors/DoctorSchedule';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import UpgradeForAppointmentDialog from '@/components/doctors/UpgradeForAppointmentDialog';
+import AppointmentPaymentDialog from '@/components/doctors/AppointmentPaymentDialog';
 
 const DoctorDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { geminiTier, setGeminiTier, healthData } = useHealthStore();
-  const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
+  const { geminiTier, healthData } = useHealthStore();
+
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [activeTab, setActiveTab] = useState('about');
 
-  // Use the hook directly — no more localStorage hack
-  const {
-    doctor,
-    isLoading,
-    error
-  } = useDoctorDetails(id);
+  const { doctor, isLoading } = useDoctorDetails(id);
 
-  useEffect(() => {
-    if (geminiTier !== 'pro') {
-      setSubscriptionDialogOpen(true);
-    }
-    window.scrollTo(0, 0);
-  }, [geminiTier]);
-
-  const handleSelectTier = (tier: 'free' | 'lite' | 'pro') => {
-    setGeminiTier(tier);
-    localStorage.setItem('geminiTier', tier);
-
-    if (tier !== 'pro') {
-      toast({
-        title: "Pro tier required",
-        description: "This feature is only available for Pro tier users",
-        variant: "destructive"
-      });
-      navigate('/profile');
-    } else {
-      setSubscriptionDialogOpen(false);
-      toast({
-        title: "Pro Tier Activated",
-        description: "You now have access to the Doctor Finder feature",
-      });
-    }
-  };
-
-  const handleContactDoctor = (date?: Date) => {
+  /** Central handler for the Schedule Appointment button at any entry point */
+  const handleScheduleAppointment = (date?: Date) => {
     if (!healthData.completedProfile) {
       toast({
-        title: "Complete your profile",
-        description: "Please complete your health profile before contacting a specialist",
-        variant: "destructive"
+        title: 'Complete your profile',
+        description: 'Please complete your health profile before booking a specialist.',
+        variant: 'destructive',
       });
       navigate('/profile');
       return;
     }
 
+    if (geminiTier === 'free') {
+      // Free users → show upgrade dialog
+      setUpgradeDialogOpen(true);
+      return;
+    }
+
+    // Lite and Pro → proceed to appointment flow
     if (date) {
       setSelectedDate(date);
-      setContactDialogOpen(true);
+      setPaymentDialogOpen(true);
     } else {
+      // No date selected yet — scroll to schedule tab
       setActiveTab('schedule');
       const scheduleSection = document.getElementById('schedule-section');
       if (scheduleSection) {
-        setTimeout(() => {
-          scheduleSection.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
+        setTimeout(() => scheduleSection.scrollIntoView({ behavior: 'smooth' }), 100);
       }
     }
+  };
+
+  /** Called after appointment is confirmed. Opens message dialog. */
+  const handleAppointmentConfirmed = () => {
+    setPaymentDialogOpen(false);
+    setContactDialogOpen(true);
   };
 
   if (isLoading) {
@@ -115,30 +99,64 @@ const DoctorDetails = () => {
         <main className="container mx-auto pt-16 sm:pt-20 md:pt-24 pb-16 px-4 md:px-8 flex-1">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-2xl font-bold mb-4">Specialist Not Found</h1>
-            <p className="text-muted-foreground mb-6">
-              We couldn't find the specialist you're looking for.
-            </p>
-            <Button onClick={() => navigate('/doctor-finder')}>
-              Back to Specialists
-            </Button>
+            <p className="text-muted-foreground mb-6">We couldn't find the specialist you're looking for.</p>
+            <Button onClick={() => navigate('/doctor-finder')}>Back to Specialists</Button>
           </div>
         </main>
       </div>
     );
   }
 
+  /** Renders the tier-aware schedule button label + icon */
+  const renderScheduleButton = () => {
+    if (geminiTier === 'free') {
+      return (
+        <Button onClick={() => handleScheduleAppointment()} variant="outline" className="border-dashed border-amber-400 text-amber-700 hover:bg-amber-50">
+          <Lock className="mr-2 h-4 w-4" />
+          Schedule Appointment
+          <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">Upgrade</span>
+        </Button>
+      );
+    }
+    if (geminiTier === 'lite') {
+      return (
+        <Button onClick={() => handleScheduleAppointment()} className="bg-purple-600 hover:bg-purple-700 text-white">
+          <Zap className="mr-2 h-4 w-4" />
+          Schedule Appointment
+          <span className="ml-2 text-xs bg-purple-500 px-1.5 py-0.5 rounded-full font-medium">₹300</span>
+        </Button>
+      );
+    }
+    // Pro
+    return (
+      <Button onClick={() => handleScheduleAppointment()}>
+        <MessageSquare className="mr-2 h-4 w-4" />
+        Schedule Appointment
+        <span className="ml-2 text-xs bg-primary/80 px-1.5 py-0.5 rounded-full font-medium">Included</span>
+      </Button>
+    );
+  };
+
   return (
     <div className="min-h-screen flex flex-col safe-area-insets">
       <Navbar />
       <main className="container mx-auto pt-16 sm:pt-20 md:pt-24 pb-16 px-4 md:px-8 flex-1">
         <div className="max-w-4xl mx-auto">
-          <Button
-            variant="ghost"
-            className="mb-6"
-            onClick={() => navigate('/doctor-finder')}
-          >
+          <Button variant="ghost" className="mb-6" onClick={() => navigate('/doctor-finder')}>
             ← Back to specialists
           </Button>
+
+          {/* Free tier notice banner */}
+          {geminiTier === 'free' && (
+            <Alert className="mb-6 border-amber-200 bg-amber-50">
+              <Crown className="h-4 w-4 text-amber-600" />
+              <AlertTitle className="text-amber-800">Free Plan</AlertTitle>
+              <AlertDescription className="text-amber-700">
+                You can browse specialists freely. To book appointments, upgrade to{' '}
+                <strong>Lite (₹300/session)</strong> or <strong>Pro (unlimited included)</strong>.
+              </AlertDescription>
+            </Alert>
+          )}
 
           <div className="flex flex-col md:flex-row gap-6 items-start mb-8">
             <div className="md:w-1/3 flex flex-col items-center">
@@ -151,32 +169,21 @@ const DoctorDetails = () => {
               <div className="mt-4 text-center">
                 <div className="flex items-center justify-center gap-1 mb-2">
                   {Array(5).fill(0).map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-5 w-5 ${i < Math.floor(doctor?.rating || 0) ? 'text-amber-500 fill-amber-500' : 'text-gray-300'}`}
-                    />
+                    <Star key={i} className={`h-5 w-5 ${i < Math.floor(doctor?.rating || 0) ? 'text-amber-500 fill-amber-500' : 'text-gray-300'}`} />
                   ))}
                   <span className="ml-2 font-medium">{doctor?.rating}</span>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {doctor?.reviewCount} patient reviews
-                </p>
+                <p className="text-sm text-muted-foreground">{doctor?.reviewCount} patient reviews</p>
               </div>
             </div>
 
             <div className="md:w-2/3">
-              <h1 className="text-3xl font-bold mb-2">
-                Dr. {doctor?.firstName} {doctor?.lastName}
-              </h1>
+              <h1 className="text-3xl font-bold mb-2">Dr. {doctor?.firstName} {doctor?.lastName}</h1>
 
               <div className="flex flex-wrap gap-2 mb-4">
-                <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
-                  {doctor?.specialty}
-                </Badge>
+                <Badge className="bg-primary/10 text-primary hover:bg-primary/20">{doctor?.specialty}</Badge>
                 {doctor?.subspecialties?.map((sub, index) => (
-                  <Badge key={index} variant="outline">
-                    {sub}
-                  </Badge>
+                  <Badge key={index} variant="outline">{sub}</Badge>
                 ))}
               </div>
 
@@ -185,12 +192,10 @@ const DoctorDetails = () => {
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                   <span>{doctor?.hospital}, {doctor?.location}</span>
                 </div>
-
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span>{doctor?.experience} years experience</span>
                 </div>
-
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-green-500" />
                   <span>{doctor?.patients}+ patients</span>
@@ -198,10 +203,7 @@ const DoctorDetails = () => {
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <Button onClick={() => handleContactDoctor()}>
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  Schedule Appointment
-                </Button>
+                {renderScheduleButton()}
                 <Button variant="outline">
                   <Phone className="mr-2 h-4 w-4" />
                   Call Office
@@ -223,9 +225,7 @@ const DoctorDetails = () => {
               <Card>
                 <CardContent className="pt-6">
                   <h3 className="text-xl font-semibold mb-3">About Dr. {doctor.lastName}</h3>
-                  <p className="text-muted-foreground leading-relaxed mb-4">
-                    {doctor.bio}
-                  </p>
+                  <p className="text-muted-foreground leading-relaxed mb-4">{doctor.bio}</p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                     <div>
@@ -239,7 +239,6 @@ const DoctorDetails = () => {
                         ))}
                       </ul>
                     </div>
-
                     <div>
                       <h4 className="font-medium mb-2">Certifications</h4>
                       <ul className="space-y-2">
@@ -270,17 +269,18 @@ const DoctorDetails = () => {
               <Alert>
                 <Clock className="h-4 w-4" />
                 <AlertTitle>Available for consultations</AlertTitle>
-                <AlertDescription>
-                  Dr. {doctor.lastName} typically responds within 24 hours.
-                </AlertDescription>
+                <AlertDescription>Dr. {doctor.lastName} typically responds within 24 hours.</AlertDescription>
               </Alert>
             </TabsContent>
 
             <TabsContent value="schedule">
-              {doctor && <DoctorSchedule
-                doctor={doctor}
-                onRequestConsultation={handleContactDoctor}
-              />}
+              {doctor && (
+                <DoctorSchedule
+                  doctor={doctor}
+                  geminiTier={geminiTier}
+                  onRequestConsultation={handleScheduleAppointment}
+                />
+              )}
             </TabsContent>
 
             <TabsContent value="reviews">
@@ -290,25 +290,29 @@ const DoctorDetails = () => {
         </div>
       </main>
 
-      <SubscriptionPlansDialog
-        isOpen={subscriptionDialogOpen}
-        onClose={() => {
-          setSubscriptionDialogOpen(false);
-          if (geminiTier !== 'pro') {
-            navigate('/profile');
-          }
-        }}
-        onSelectTier={handleSelectTier}
-        initialTab="pro"
+      {/* Free tier upgrade dialog */}
+      <UpgradeForAppointmentDialog
+        isOpen={upgradeDialogOpen}
+        onClose={() => setUpgradeDialogOpen(false)}
+        doctorName={`Dr. ${doctor?.firstName} ${doctor?.lastName}`}
       />
 
+      {/* Lite/Pro payment & confirmation dialog */}
+      {doctor && selectedDate && (
+        <AppointmentPaymentDialog
+          isOpen={paymentDialogOpen}
+          onClose={() => setPaymentDialogOpen(false)}
+          doctor={doctor}
+          appointmentDate={selectedDate}
+          onConfirmed={handleAppointmentConfirmed}
+        />
+      )}
+
+      {/* Contact/message dialog — opened after appointment confirmed */}
       {doctor && (
         <ContactDoctorDialog
           isOpen={contactDialogOpen}
-          onClose={() => {
-            setContactDialogOpen(false);
-            setSelectedDate(undefined);
-          }}
+          onClose={() => { setContactDialogOpen(false); setSelectedDate(undefined); }}
           doctor={doctor}
           appointmentDate={selectedDate}
         />
