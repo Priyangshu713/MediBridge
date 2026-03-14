@@ -1009,6 +1009,30 @@ document.addEventListener('keydown',e=>{
   if(e.key==='ArrowRight'||e.key===' ')go(Math.min(cur+1,15));
   if(e.key==='ArrowLeft')go(Math.max(cur-1,0));
 });
+
+// PDF EXPORT FIX FOR ILOVEPDF / SEJDA
+if (window.location.search.includes('print=true')) {
+  document.body.style.overflow = 'visible';
+  document.body.style.height = 'auto';
+  document.body.style.background = '#fff';
+  document.querySelector('.nav-bar').style.display = 'none';
+  document.querySelector('.counter').style.display = 'none';
+  document.querySelector('.deck').style.height = 'auto';
+  document.querySelector('.deck').style.position = 'static';
+  
+  const allSlides = document.querySelectorAll('.slide');
+  allSlides.forEach(s => {
+    s.style.display = 'flex';
+    s.style.position = 'relative';
+    s.style.width = '1280px';
+    s.style.height = '720px';
+    s.style.marginBottom = '20px';
+    s.style.pageBreakAfter = 'always';
+    s.style.opacity = '1';
+    s.style.transform = 'none';
+    s.classList.add('active');
+  });
+}
 </script>
 </body>
 </html>
