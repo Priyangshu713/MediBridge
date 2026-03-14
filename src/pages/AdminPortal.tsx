@@ -15,8 +15,8 @@ const AdminPortal: React.FC = () => {
     const [doctors, setDoctors] = useState<any[]>([]);
     const { toast } = useToast();
 
-    // The hardcoded admin email
-    const ADMIN_EMAIL = 'priyangshu713@gmail.com';
+    // Admin email is read from env vars — never hardcode credentials in the bundle
+    const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || '';
 
     useEffect(() => {
         checkAdminSession();

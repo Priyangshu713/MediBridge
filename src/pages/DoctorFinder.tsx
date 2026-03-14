@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '@/components/Navbar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DoctorCard } from '@/components/doctors/DoctorCard';
 import { DoctorFilterSidebar } from '@/components/doctors/DoctorFilterSidebar';
@@ -38,11 +37,6 @@ const DoctorFinder = () => {
     if (geminiTier === 'free') {
       setSubscriptionDialogOpen(true);
     }
-    
-    ;(async()=>{
-      
-    })()
-
 
     // Check if profile is complete for recommendations
     if (selectedTab === 'recommended' && !healthData.completedProfile) {
@@ -59,17 +53,17 @@ const DoctorFinder = () => {
     setGeminiTier(tier);
     localStorage.setItem('geminiTier', tier);
     
-    if (tier !== 'pro') {
+    if (tier === 'free') {
       toast({
-        title: "Pro tier required",
-        description: "This feature is only available for Pro tier users",
+        title: "Upgrade required",
+        description: "Please select a Lite or Pro plan to access Doctor Finder",
         variant: "destructive"
       });
       navigate('/profile');
     } else {
       setSubscriptionDialogOpen(false);
       toast({
-        title: "Pro Tier Activated",
+        title: tier === 'pro' ? 'Pro Tier Activated' : 'Lite Tier Activated',
         description: "You now have access to the Doctor Finder feature",
       });
     }
@@ -81,7 +75,6 @@ const DoctorFinder = () => {
 
   return (
     <div className="min-h-screen flex flex-col safe-area-insets">
-      <Navbar />
       <main className="container mx-auto pt-16 sm:pt-20 md:pt-24 pb-16 px-4 md:px-8 flex-1">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8 mt-4">

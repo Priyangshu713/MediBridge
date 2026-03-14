@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Navbar from '@/components/Navbar';
 import ProfileView from '@/components/profile/ProfileView';
 import AdvancedHealthInfoDialog from '@/components/profile/AdvancedHealthInfoDialog';
 import AdvancedHealthData from '@/components/profile/AdvancedHealthData';
@@ -83,22 +82,7 @@ const Profile = () => {
     };
   }, [location, navigate, toast, healthData.completedAdvancedAnalysis, isProTier]);
 
-  useEffect(() => {
-    const setVhProperty = () => {
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
-    };
-
-    setVhProperty();
-
-    window.addEventListener('resize', setVhProperty);
-    window.addEventListener('orientationchange', setVhProperty);
-
-    return () => {
-      window.removeEventListener('resize', setVhProperty);
-      window.removeEventListener('orientationchange', setVhProperty);
-    };
-  }, []);
+  // NOTE: --vh CSS property is managed globally in App.tsx, no need to duplicate it here.
 
   useEffect(() => {
     const storedTier = localStorage.getItem('geminiTier') as 'free' | 'lite' | 'pro' | null;
@@ -188,7 +172,6 @@ const Profile = () => {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-health-mint/10 safe-area-insets">
-        <Navbar />
         <AuthView onLoginSuccess={handleLoginSuccess} />
       </div>
     );
@@ -197,7 +180,6 @@ const Profile = () => {
   if (showAdvancedForm) {
     return (
       <div className="min-h-screen flex flex-col safe-area-insets">
-        <Navbar />
         <main className="container mx-auto max-w-3xl pt-16 sm:pt-20 md:pt-24 pb-16 px-4 flex-1 overflow-auto momentum-scroll">
           <AdvancedHealthData
             onComplete={handleAdvancedFormComplete}
@@ -213,7 +195,6 @@ const Profile = () => {
 
     return (
       <div className="min-h-screen flex flex-col safe-area-insets">
-        <Navbar />
         <main className="container mx-auto max-w-5xl pt-16 sm:pt-20 md:pt-24 pb-16 px-4 md:px-8 flex-1 overflow-auto momentum-scroll">
           <AdvancedHealthAnalysis
             healthData={analysisData}
@@ -227,7 +208,6 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen flex flex-col safe-area-insets">
-      <Navbar />
       <main className="container mx-auto max-w-3xl pt-16 sm:pt-20 md:pt-24 pb-16 px-4 flex-1 overflow-auto momentum-scroll">
         <ProfileView onOpenAdvancedAnalysis={handleOpenAdvancedAnalysis} />
 

@@ -182,11 +182,11 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor, geminiTi
                 onClick={() => selectedDate && onRequestConsultation?.(selectedDate)}
                 disabled={!selectedDate}
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                aria-label="Schedule appointment — ₹300 fee"
+                aria-label="Schedule appointment — ₹299 fee"
               >
                 <Zap className="mr-2 h-4 w-4" />
                 Schedule Appointment
-                <span className="ml-2 text-xs bg-purple-500 px-1.5 py-0.5 rounded-full font-medium">₹300</span>
+                <span className="ml-2 text-xs bg-purple-500 px-1.5 py-0.5 rounded-full font-medium">₹299</span>
               </Button>
             ) : (
               <Button

@@ -17,7 +17,6 @@ import GeminiTierSelector from '@/components/common/GeminiTierSelector';
 const AIBot = () => {
   const healthStore = useHealthStore();
   const { geminiApiKey, geminiModel, geminiTier } = healthStore;
-  const [useAI, setUseAI] = useState(!!geminiApiKey && geminiTier !== 'free');
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
   const isThinkingModel = geminiModel.includes("thinking");
@@ -25,6 +24,17 @@ const AIBot = () => {
   const isFreeUser = geminiTier === 'free';
   const isPaidUser = geminiTier === 'lite' || geminiTier === 'pro';
   const navigate = useNavigate();
+
+  // Check if free trial is exhausted (same key as ChatBot uses)
+  const FREE_TRIAL_LIMIT = 2;
+  const FREE_TRIAL_KEY = 'medibridge_free_ai_messages';
+  const [freeMessagesUsed, setFreeMessagesUsed] = useState(() =>
+    parseInt(localStorage.getItem(FREE_TRIAL_KEY) || '0', 10)
+  );
+  const freeTrialExhausted = isFreeUser && freeMessagesUsed >= FREE_TRIAL_LIMIT;
+
+  // useAI: true for paid users OR for free users who still have trial messages
+  const [useAI, setUseAI] = useState(!!geminiApiKey && (isPaidUser || !freeTrialExhausted));
   
   // Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -33,25 +43,25 @@ const AIBot = () => {
   
   // Refresh useAI state when API key or tier changes
   useEffect(() => {
-    setUseAI(!!geminiApiKey && geminiTier !== 'free');
-  }, [geminiApiKey, geminiTier]);
+    setUseAI(!!geminiApiKey && (isPaidUser || !freeTrialExhausted));
+  }, [geminiApiKey, geminiTier, freeTrialExhausted, isPaidUser]);
   
-  // Add event listener for tier changes
   useEffect(() => {
     const handleTierChanged = (event: CustomEvent) => {
       const { tier } = event.detail;
+      const currentTrialExhausted = parseInt(localStorage.getItem(FREE_TRIAL_KEY) || '0', 10) >= FREE_TRIAL_LIMIT;
       if (tier && (tier === 'lite' || tier === 'pro')) {
+        setUseAI(true);
+      } else if (tier === 'free' && !currentTrialExhausted) {
+        // Free user still has trial messages — keep AI enabled
         setUseAI(true);
       } else {
         setUseAI(false);
       }
     };
-    
+
     window.addEventListener('geminiTierChanged', handleTierChanged as EventListener);
-    
-    return () => {
-      window.removeEventListener('geminiTierChanged', handleTierChanged as EventListener);
-    };
+    return () => window.removeEventListener('geminiTierChanged', handleTierChanged as EventListener);
   }, []);
   
   // Check authentication status

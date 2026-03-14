@@ -29,8 +29,6 @@ export const getDailyInsight = async (
 
     if (!chatSession) return null;
 
-    if (!chatSession) return null;
-
     // 2. Construct the prompt
     const prompt = `
       Analyze this user's health data and provide ONE single, unique, personalized daily health insight.

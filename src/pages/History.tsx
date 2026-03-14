@@ -15,24 +15,12 @@ export default function History() {
   const navigate = useNavigate();
   const { healthData } = useHealthStore();
   const { historyEntries, loading, fetchHistory } = useHistoryStore();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check authentication
-    const auth = localStorage.getItem('isAuthenticated') === 'true';
-    setIsAuthenticated(auth);
-    
-    if (!auth) {
-      navigate('/profile');
-    } else {
-      fetchHistory();
-    }
-  }, [navigate, fetchHistory]);
-
-  // Redirect if not authenticated
-  if (!isAuthenticated) {
-    return null;
-  }
+    // ProtectedRoute in App.tsx already guards this route.
+    // We only need to fetch history data.
+    fetchHistory();
+  }, [fetchHistory]);
 
   return (
     <div className="container max-w-5xl mx-auto px-4 py-20 sm:py-24 space-y-8">
@@ -77,12 +65,22 @@ export default function History() {
           </TabsList>
           
           <TabsContent value="comparison" className="mt-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <HistoryComparisonCard 
-                currentData={healthData} 
-                    historicalData={historyEntries[1]?.healthData || historyEntries[0]?.healthData} 
-              />
-            </div>
+            {historyEntries.length < 2 ? (
+              <div className="p-6 text-center bg-muted rounded-lg">
+                <TrendingUp className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                <h3 className="font-medium text-lg">Not enough data to compare</h3>
+                <p className="text-muted-foreground mt-2">
+                  You need at least 2 saved health analyses to see a comparison.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2">
+                <HistoryComparisonCard 
+                  currentData={historyEntries[0]?.healthData}
+                  historicalData={historyEntries[historyEntries.length - 1]?.healthData}
+                />
+              </div>
+            )}
           </TabsContent>
           
           <TabsContent value="history" className="mt-6">

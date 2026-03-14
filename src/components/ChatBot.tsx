@@ -54,20 +54,32 @@ const ChatBot: React.FC<ChatBotProps> = ({ useGemini: initialUseGemini, geminiTi
   const isPaidUser = currentGeminiTier === 'lite' || currentGeminiTier === 'pro';
   const isPremiumModel = geminiModel.includes('gemini-2.0-pro') ||
     geminiModel.includes('gemini-2.0-flash-thinking') ||
-    geminiModel.includes('gemini-2.0-flash-thinking');
+    geminiModel.includes('gemini-2.0-flash-exp');
   const canUseSelectedModel = isPaidUser && (!isPremiumModel || currentGeminiTier === 'pro');
 
   const [expandedMessages, setExpandedMessages] = useState<Record<string, boolean>>({});
   const [showHelpDialog, setShowHelpDialog] = useState(false);
   const [mode, setMode] = useState<'chat' | 'symptom-checker'>('chat');
+  const [pendingModeSwitch, setPendingModeSwitch] = useState<'chat' | 'symptom-checker' | null>(null);
+  const [showModelSwitchDialog, setShowModelSwitchDialog] = useState(false);
+
+  // Free trial message tracking
+  const FREE_TRIAL_LIMIT = 2;
+  const FREE_TRIAL_KEY = 'medibridge_free_ai_messages';
+  const [freeMessagesUsed, setFreeMessagesUsed] = useState<number>(() => {
+    return parseInt(localStorage.getItem(FREE_TRIAL_KEY) || '0', 10);
+  });
+  const freeTrialExhausted = !isPaidUser && freeMessagesUsed >= FREE_TRIAL_LIMIT;
+  const freeTrialRemaining = Math.max(0, FREE_TRIAL_LIMIT - freeMessagesUsed);
 
   useEffect(() => {
-    if (isPaidUser && geminiApiKey) {
+    // Enable Gemini for paid users OR for free users who still have trial messages left
+    if (geminiApiKey && (isPaidUser || !freeTrialExhausted)) {
       setUseGemini(true);
     } else {
       setUseGemini(false);
     }
-  }, [isPaidUser, geminiApiKey]);
+  }, [isPaidUser, geminiApiKey, freeTrialExhausted]);
 
   useEffect(() => {
     const loadHistory = async () => {
@@ -165,6 +177,12 @@ const ChatBot: React.FC<ChatBotProps> = ({ useGemini: initialUseGemini, geminiTi
 
     if (!input.trim()) return;
 
+    // Free trial gate: allow up to FREE_TRIAL_LIMIT messages for free users
+    if (!isPaidUser && freeTrialExhausted) {
+      if (onRequestUpgrade) onRequestUpgrade();
+      return;
+    }
+
     if (isPremiumModel && currentGeminiTier !== 'pro') {
       toast({
         title: "Premium Model Restricted",
@@ -178,12 +196,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ useGemini: initialUseGemini, geminiTi
       return;
     }
 
-    if (currentGeminiTier === 'free' && useGemini) {
-      if (onRequestUpgrade) {
-        onRequestUpgrade();
-      }
-      return;
-    }
+    // Note: free users with remaining trial messages proceed normally past here.
 
     const userMessageId = Date.now().toString();
     const userMessage: Message = {
@@ -283,8 +296,12 @@ const ChatBot: React.FC<ChatBotProps> = ({ useGemini: initialUseGemini, geminiTi
     };
 
     try {
-      if (useGemini && geminiApiKey && canUseSelectedModel) {
-        let geminiSession = await createGeminiChatSession(geminiApiKey, geminiModel, mode);
+      // Free users on trial: use the lightest model (not premium)
+      // Paid users: use their selected model
+      const effectiveModel = !isPaidUser ? 'gemini-3.1-flash-lite-preview' as const : geminiModel;
+
+      if (useGemini && geminiApiKey && (canUseSelectedModel || (!isPaidUser && !freeTrialExhausted))) {
+        let geminiSession = await createGeminiChatSession(geminiApiKey, effectiveModel, mode);
 
         try {
           const stream = await geminiSession.sendMessageStream(currentInput);
@@ -308,9 +325,9 @@ const ChatBot: React.FC<ChatBotProps> = ({ useGemini: initialUseGemini, geminiTi
         }
 
       } else {
-        // Fallback logic for free tier or simulation
+        // Only show upgrade wall when trial is fully exhausted
         let stream;
-        if (currentGeminiTier === 'free') {
+        if (freeTrialExhausted) {
           const upgradeMessage = `**Upgrade Required**
             
 To access the AI-powered health assistant with personalized recommendations, please upgrade to our Lite or Pro tier.
@@ -325,6 +342,15 @@ Click the "Upgrade" button below to access premium features.`;
         }
 
         await processStream(stream);
+      }
+
+      // Only count a free message if a REAL AI response was delivered (not the upgrade fallback)
+      if (!isPaidUser && useGemini && geminiApiKey && !freeTrialExhausted) {
+        setFreeMessagesUsed(prev => {
+          const next = prev + 1;
+          localStorage.setItem(FREE_TRIAL_KEY, String(next));
+          return next;
+        });
       }
     } catch (error) {
       console.error('Error generating response:', error);
@@ -387,6 +413,18 @@ Click the "Upgrade" button below to access premium features.`;
 
   const handleModeChange = async (newMode: 'chat' | 'symptom-checker') => {
     if (mode === newMode) return;
+
+    // Warn the user if there's a conversation in progress
+    if (messages.length > 1) {
+      setPendingModeSwitch(newMode);
+      setShowModelSwitchDialog(true);
+      return;
+    }
+
+    await applyModeChange(newMode);
+  };
+
+  const applyModeChange = async (newMode: 'chat' | 'symptom-checker') => {
     setMode(newMode);
 
     // Load existing session for the new mode
@@ -637,16 +675,11 @@ Click the "Upgrade" button below to access premium features.`;
             placeholder={mode === 'symptom-checker' ? "Describe your symptoms..." : "Type your health question..."}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            disabled={isLoading || (!isPaidUser && useGemini)}
+            disabled={isLoading || freeTrialExhausted}
             className="flex-1"
           />
 
-          {isPaidUser ? (
-            <Button type="submit" disabled={isLoading || !input.trim()}>
-              <Send className="h-4 w-4" />
-              <span className="sr-only">Send</span>
-            </Button>
-          ) : (
+          {freeTrialExhausted ? (
             <Button
               type="button"
               onClick={onRequestUpgrade}
@@ -655,16 +688,62 @@ Click the "Upgrade" button below to access premium features.`;
               <Sparkles className="h-4 w-4" />
               Upgrade
             </Button>
+          ) : (
+            <Button type="submit" disabled={isLoading || !input.trim()}>
+              <Send className="h-4 w-4" />
+              <span className="sr-only">Send</span>
+            </Button>
           )}
         </form>
 
         {!isPaidUser && (
-          <p className="text-xs text-muted-foreground mt-2">
-            <Bot className="h-3 w-3 inline mr-1" />
-            Upgrade to access AI-powered health assistant
-          </p>
+          <div className="px-4 pb-2">
+            {freeTrialExhausted ? (
+              <div className="flex items-center gap-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                <Sparkles className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
+                <p className="text-xs text-amber-800 flex-1">
+                  You've used all <strong>{FREE_TRIAL_LIMIT} free messages</strong>. Upgrade to keep chatting.
+                </p>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="flex gap-0.5">
+                  {Array.from({ length: FREE_TRIAL_LIMIT }).map((_, i) => (
+                    <div key={i} className={`h-1.5 w-6 rounded-full transition-colors ${
+                      i < freeMessagesUsed ? 'bg-amber-500' : 'bg-muted'
+                    }`} />
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {freeTrialRemaining} free {freeTrialRemaining === 1 ? 'message' : 'messages'} remaining
+                </p>
+              </div>
+            )}
+          </div>
         )}
       </div>
+
+      <Dialog open={showModelSwitchDialog} onOpenChange={setShowModelSwitchDialog}>
+        <DialogContent className="max-w-sm rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Switch Mode?</DialogTitle>
+          </DialogHeader>
+          <DialogDescription className="text-sm">
+            Switching to a different mode will start a new session. Your current conversation will be lost.
+          </DialogDescription>
+          <div className="flex justify-end gap-2 mt-2">
+            <Button variant="outline" onClick={() => {
+              setShowModelSwitchDialog(false);
+              setPendingModeSwitch(null);
+            }}>Cancel</Button>
+            <Button onClick={async () => {
+              setShowModelSwitchDialog(false);
+              if (pendingModeSwitch) await applyModeChange(pendingModeSwitch);
+              setPendingModeSwitch(null);
+            }}>Continue</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showHelpDialog} onOpenChange={setShowHelpDialog}>
         <DialogContent className="max-w-md rounded-2xl">

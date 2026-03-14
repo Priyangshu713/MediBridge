@@ -40,9 +40,10 @@ function App() {
   const modalRootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Minimal delay lets CSS animations initialize; actual readiness is tied to auth sync below
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 1500);
+    }, 400);
 
     return () => clearTimeout(timer);
   }, []);
@@ -105,7 +106,8 @@ function App() {
   }, []);
 
   // Define public paths that don't require authentication
-  const publicPaths = ['/profile', '/ai-bot', '/forgot-password', '/reset-password', '/about', '/contact', '/doctor-portal', '/admin'];
+  // NOTE: /admin is intentionally NOT here — it must be protected by ProtectedRoute
+  const publicPaths = ['/profile', '/ai-bot', '/forgot-password', '/reset-password', '/about', '/contact', '/doctor-portal'];
 
   return (
     <>

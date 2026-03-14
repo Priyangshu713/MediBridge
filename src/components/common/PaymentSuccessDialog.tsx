@@ -2,9 +2,10 @@
 import React, { useEffect } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Sparkles } from 'lucide-react';
 import Confetti from 'react-confetti';
 import { useWindowSize } from '@/hooks/use-window-size';
+import { useNavigate } from 'react-router-dom';
 
 interface PaymentSuccessDialogProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
   billingCycle
 }) => {
   const { width, height } = useWindowSize();
+  const navigate = useNavigate();
   
   // Auto-close after 5 seconds
   useEffect(() => {
@@ -73,8 +75,20 @@ const PaymentSuccessDialog: React.FC<PaymentSuccessDialogProps> = ({
             </p>
           </div>
           
-          <DialogFooter className="mt-8 w-full">
-            <Button className="w-full" onClick={onClose}>
+          <DialogFooter className="mt-6 w-full flex flex-col gap-2">
+            {plan.toLowerCase().includes('pro') && (
+              <Button
+                className="w-full bg-amber-500 hover:bg-amber-600 text-white gap-2"
+                onClick={() => {
+                  onClose();
+                  navigate('/profile', { state: { showAnalysisResults: true } });
+                }}
+              >
+                <Sparkles className="h-4 w-4" />
+                Try Advanced Health Analysis
+              </Button>
+            )}
+            <Button variant="outline" className="w-full" onClick={onClose}>
               Continue to Dashboard
             </Button>
           </DialogFooter>

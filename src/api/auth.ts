@@ -447,8 +447,8 @@ export const updateProfileImage = async (imageDataUrl: string) => {
             ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            // Better quality (20%)
-            imageDataUrl = canvas.toDataURL('image/jpeg', 0.2);
+            // Good quality (80%) — enough for profile photos without blurriness
+            imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
         } catch (e) {
             console.error('Error performing final optimization:', e);
@@ -691,7 +691,6 @@ export const initiatePayment = async (amount: number, duration: string, plan: st
                     }
 
                     const paymentData = await paymentResponse.json();
-                    console.log('Payment verification response:', paymentData.success);
 
                     // check if the payment is successful
                     if (paymentData.success) {
@@ -711,7 +710,11 @@ export const initiatePayment = async (amount: number, duration: string, plan: st
 
                 } catch (error) {
                     console.error('Error in payment handler:', error);
-                    alert('Payment verification failed. Please try again.');
+                    // Show error as a non-blocking notification
+                    const event = new CustomEvent('paymentError', {
+                        detail: { message: 'Payment verification failed. Please contact support if your payment was deducted.' }
+                    });
+                    window.dispatchEvent(event);
                 }
             },
         };
@@ -734,7 +737,10 @@ export const initiatePayment = async (amount: number, duration: string, plan: st
                 contact: localStorage.getItem('userPhone') || '',
             };
         }
-        console.log('--- RAZORPAY CHECKOUT OPTIONS DUMP ---', JSON.parse(JSON.stringify(options)));
+        // Debug logging disabled in production
+        if (import.meta.env.DEV) {
+            console.log('--- RAZORPAY CHECKOUT OPTIONS (DEV ONLY) ---', { key: options.key, name: options.name });
+        }
 
         const razorpay = new window.Razorpay(options);
 

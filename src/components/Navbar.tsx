@@ -11,7 +11,7 @@ import { dispatchAuthEvent } from '@/App';
 import DoctorMenuNavigation from './DoctorMenuNavigation';
 import AccountSettings from '@/components/settings/AccountSettings';
 import ChangelogDialog from '@/components/common/ChangelogDialog';
-import { getUserProfile } from '@/api/auth';
+import { getUserProfile, logoutUser } from '@/api/auth';
 import { getGravatarUrl } from '@/utils/avatar';
 import {
   DropdownMenu,
@@ -28,7 +28,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { healthData, geminiTier, setAppointmentCredits } = useHealthStore();
+  const { healthData, geminiTier, setAppointmentCredits, appointmentCredits } = useHealthStore();
   const isMobile = useIsMobile();
 
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -174,11 +174,9 @@ const Navbar = () => {
   };
 
   const handleSignOut = async () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('token');
-    localStorage.removeItem('geminiTier');
+    // Use logoutUser() from auth.ts as single source of truth for clear keys
+    // (clears billingCycle, proTrialUsed, trialEndDate, etc. in addition to auth keys)
+    logoutUser();
     localStorage.removeItem('userProfileImage');
 
     // Sign out from doctor portal if active
@@ -316,6 +314,20 @@ const Navbar = () => {
     };
   }, [isAuthenticated]);
 
+  // Listen for payment errors dispatched from auth.ts (replaces alert())
+  useEffect(() => {
+    const handlePaymentError = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      toast({
+        title: "Payment Error",
+        description: customEvent.detail?.message || 'Payment verification failed. Please contact support.',
+        variant: 'destructive',
+      });
+    };
+    window.addEventListener('paymentError', handlePaymentError);
+    return () => window.removeEventListener('paymentError', handlePaymentError);
+  }, [toast]);
+
 
 
   return (
@@ -401,17 +413,24 @@ const Navbar = () => {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 mt-1">
-                  <div className="flex flex-col px-4 py-3">
-                    <p className="text-sm font-medium">{getUserName()}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{userEmail}</p>
-                    {isDoctorUser && (
-                      <span className="mt-1 px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full w-fit">
-                        Doctor Account
-                      </span>
+                  <DropdownMenuContent align="end" className="w-56 mt-1">
+                    <div className="flex flex-col px-4 py-3">
+                      <p className="text-sm font-medium">{getUserName()}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{userEmail}</p>
+                      {isDoctorUser && (
+                        <span className="mt-1 px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full w-fit">
+                          Doctor Account
+                        </span>
+                      )}
+                    </div>
+                    {/* Low appointment credits warning */}
+                    {!isDoctorUser && appointmentCredits === 1 && (
+                      <div className="mx-2 mb-1 px-3 py-2 bg-amber-50 border border-amber-200 rounded-md">
+                        <p className="text-xs text-amber-800 font-medium">⚠️ 1 appointment credit left</p>
+                        <p className="text-xs text-amber-700 mt-0.5">Buy credits to keep seeing doctors.</p>
+                      </div>
                     )}
-                  </div>
-                  <DropdownMenuSeparator />
+                    <DropdownMenuSeparator />
                   <DropdownMenuItem className="cursor-pointer" onClick={() => isDoctorUser ? navigate('/doctor-portal') : setShowAccountSettings(true)}>
                     <Settings className="mr-2 h-4 w-4" />
                     <span>{isDoctorUser ? 'Doctor Portal' : 'Account Settings'}</span>
@@ -519,12 +538,12 @@ const Navbar = () => {
                   className="flex items-center space-x-3 px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-xl mb-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   <Avatar className="h-10 w-10 bg-primary text-white">
-                    {userProfileImage ? (
+                      {userProfileImage ? (
                       <AvatarImage
                         src={userProfileImage}
                         alt="Profile"
                         className="avatar-image"
-                        key={`avatar-${Date.now()}`}
+                        key="avatar-image"
                       />
                     ) : (
                       <AvatarFallback>{getUserInitials()}</AvatarFallback>

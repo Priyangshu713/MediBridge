@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Doctor } from '@/types/doctor';
-import { Star, MapPin, Calendar } from 'lucide-react';
+import { Star, MapPin, Calendar, CalendarPlus } from 'lucide-react';
 
 interface DoctorCardProps {
   doctor: Doctor;
@@ -57,7 +57,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = ({ doctor }) => {
       </CardContent>
       
       <CardFooter className="px-6 pb-6 pt-0">
-        <Button variant="outline" className="w-full" onClick={handleClick}>
+        <Button className="w-full" variant="outline" onClick={handleClick}>
           View Profile
         </Button>
       </CardFooter>
