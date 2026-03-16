@@ -34,6 +34,7 @@ const AboutPage = () => {
       github: "https://github.com/tarakNathJ/",
       linkedin: "https://www.linkedin.com/in/tarak-nath-jana-7411a0301/" 
     },
+    /*
     {
       name: "Abhilash Bhunia",
       role: "AI Model Developer, Data Analysis",
@@ -66,6 +67,7 @@ const AboutPage = () => {
       github: "https://github.com/cobraa9",
       // linkedin: "https://linkedin.com/in/anirbanmaity"
     }
+    */
   ];
 
   const navigate = useNavigate();

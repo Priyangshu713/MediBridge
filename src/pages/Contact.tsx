@@ -24,7 +24,7 @@ const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_bih3xv
 const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'up916aLQKcVp5vB6S';
 
 // This constant will be the fixed recipient email
-const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'priyangshu713@gmail.com';
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'medibridge0fficiais@gmail.com';
 
 const ContactPage = () => {
     const { toast } = useToast();
@@ -443,8 +443,7 @@ const ContactPage = () => {
                                                     <Mail className="h-5 w-5 text-primary" />
                                                 </motion.div>
                                                 <h3 className="font-semibold text-lg mb-1">Email Us</h3>
-                                                <p className="text-muted-foreground break-words">priyangshudutta2003@gmail.com</p>
-                                                <p className="text-muted-foreground break-words">priyangshu713@gmail.com</p>
+                                                <p className="text-muted-foreground break-words">medibridge0fficiais@gmail.com</p>
                                             </CardContent>
                                         </Card>
 
