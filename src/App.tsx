@@ -106,7 +106,7 @@ function App() {
   }, []);
 
   // Define public paths that don't require authentication
-  // NOTE: /admin is intentionally NOT here — it must be protected by ProtectedRoute
+  // NOTE: /admin handles its own authentication via Supabase inside the AdminPortal component.
   const publicPaths = ['/profile', '/ai-bot', '/forgot-password', '/reset-password', '/about', '/contact', '/doctor-portal'];
 
   return (
@@ -187,11 +187,7 @@ function App() {
                     <ChangelogDemo />
                   </ProtectedRoute>
                 } />
-                <Route path="/admin" element={
-                  <ProtectedRoute publicPaths={publicPaths}>
-                    <AdminPortal />
-                  </ProtectedRoute>
-                } />
+                <Route path="/admin" element={<AdminPortal />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
