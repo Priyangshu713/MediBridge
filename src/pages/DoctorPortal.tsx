@@ -208,8 +208,8 @@ const DoctorPortal: React.FC = () => {
 
             if (result.success) {
                 toast({
-                    title: 'Registration successful!',
-                    description: 'Welcome to MediBridge! You are now logged in.',
+                    title: 'Registration Request Submitted',
+                    description: 'Your request is pending admin approval. You will gain full access to the portal once verified.',
                 });
             } else {
                 toast({
