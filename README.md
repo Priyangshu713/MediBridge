@@ -1,67 +1,98 @@
-# 🩺 Health Connect – Major Project by The Alpha Group
+# 🩺 MediBridge — AI-Powered Health & Wellness Platform
 
-Welcome to the official frontend repository of **Health Connect**, developed as a major project by **The Alpha Group**.
+Welcome to the official repository of **MediBridge** (formerly Health Connect).
+
+🔗 **Repository:** [https://github.com/Priyangshu713/MediBridge](https://github.com/Priyangshu713/MediBridge)
 
 ---
 
-## 🚀 Getting Started
+## ❓ Why MediBridge is Absolutely Necessary
 
-You can either work locally using your preferred IDE, directly in GitHub, or via GitHub Codespaces.
+In today's fast-paced world, healthcare and personal wellness are often highly fragmented, reactive, and difficult to manage. Users use separate apps for dieting, mental health, symptom checking, and doctor consultations, leading to disconnected data and missed insights. 
 
-### 🔧 Local Development Setup
+**MediBridge solves this critical problem.** 
 
-Make sure you have **Node.js** and **npm** installed. We recommend using [nvm](https://github.com/nvm-sh/nvm#installing-and-updating) for Node version management.
+It is an absolute necessity because it provides a **unified, proactive, and intelligent health ecosystem**. By leveraging advanced AI, MediBridge empowers users to take control of their holistic well-being daily. It bridges the gap between everyday wellness tracking and professional medical care—interpreting symptoms, analyzing nutrition, monitoring mental health trends, and seamlessly escalating to real doctors when human intervention is needed. MediBridge doesn't just track data; it provides actionable, intelligent insights that can fundamentally improve users' quality of life.
 
-Follow these steps to start the development server locally:
+---
+
+## ✨ Core Features
+
+### 🤖 Intelligent AI Health Assistant
+- **Symptom Checker Mode**: Specialized medical triage that safely evaluates symptoms and advises on next steps.
+- **Bleeding-Edge AI Models**: Access to highly capable AI models that can reason through complex health queries and provide lightning-fast, highly accurate inferences.
+
+### 🥗 Advanced Nutrition & ScanBar
+- **Instant Food Analysis**: Use the device camera to scan item barcodes and instantly receive deep nutritional breakdowns.
+- **Contextual Dietary Verdicts**: AI analyzes whether a specific food aligns with your personal health profile and goals.
+
+### 🧠 Mental Wellness Journal
+- **Mood Tracking & Visualization**: Daily logging of emotional states, visualized through interactive charts (radar, line trends).
+- **AI Emotional Analysis**: Intelligent breakdown of journal entries, providing sentiment indicators and actionable mental health recommendations.
+
+### 👨‍⚕️ Doctor Consultations & Telemedicine
+- **Virtual Appointments**: Browse verified practitioners and book telemedicine sessions directly within the app.
+- **Data Sharing**: Securely share your encrypted wellness journal and health history summaries with your doctor before the consultation for better-informed medical advice.
+
+### 🛡️ Enterprise-Grade Security & Sync
+- **Cross-Device Persistence**: All health data (Basic/Advanced Analysis) and Wellness entries are securely stored on our central servers.
+- **HttpOnly Cookies**: Authentication is handled via highly secure HttpOnly cookies, rendering sessions immune to XSS attacks.
+
+### 💳 Tiered Subscriptions
+- **Flexible Plans**: Choose between Free, Lite, and Pro tiers to unlock advanced AI capabilities and exclusive features (like ScanBar and Invisible AI).
+- **Seamless Billing**: Integrated Razorpay payment portal with automatic tier synchronization.
+
+---
+
+## 🏗 Tech Stack & Architecture
+
+MediBridge is built with performance, security, and scalability in mind.
+
+**Frontend:**
+- ⚡ **Framework**: React + TypeScript + Vite
+- 💅 **Styling & UI**: Tailwind CSS, shadcn/ui
+- 🎬 **Animations**: Framer Motion
+- 📊 **Data Visualization**: Recharts
+
+**Backend Architecture:**
+- **Tri-Backend System**: Separate microservice logic for Core API, User Authentication, and Doctor Authentication.
+- **Database**: MongoDB (securely storing health profiles, appointment records, and wellness journals).
+- **Security**: Robust CORS policies, JWT-based HttpOnly cookies, strictly enforced environment variables.
+
+---
+
+## 🚀 Getting Started (Local Development)
+
+### Prerequisites
+- **Node.js** (v18+)
+- **npm** or **bun**
+
+### Installation
 
 ```bash
-# Step 1: Clone the repository using the Git URL
-git clone https://github.com/Priyangshu713/Health-Connect-App
+# Clone the repository
+git clone https://github.com/Priyangshu713/MediBridge
 
-# Step 2: Install the required dependencies
+# Navigate into the directory
+cd MediBridge
+
+# Install frontend dependencies
 npm install
 
-# Step 3: Start the development server
+# Start the Vite development server
 npm run dev
 ```
 
-### ✏️ Editing Files in GitHub
-
-- Navigate to the file you want to edit.
-- Click the **pencil icon** (🖉) to edit the file directly in your browser.
-- Commit your changes when you're done.
-
-### 💻 Using GitHub Codespaces
-
-- Go to the repository's main page.
-- Click the **"Code"** button.
-- Select the **"Codespaces"** tab.
-- Click **"New codespace"** to spin up a development environment instantly.
-- Edit and push your changes right from the Codespace.
+*Note: You must have the corresponding MediBridge backend servers running locally or configured via `.env` to experience full functionality.*
 
 ---
 
-## 🧰 Tech Stack
+## 🔒 License & Usage Rights
 
-This project is built using the following modern tools and frameworks:
+**This project is proprietary software.**
 
-- ⚡ [Vite](https://vitejs.dev/)
-- ⚛️ [React](https://reactjs.org/)
-- 🟦 [TypeScript](https://www.typescriptlang.org/)
-- 🧩 [shadcn/ui](https://ui.shadcn.com/)
-- 🎨 [Tailwind CSS](https://tailwindcss.com/)
+> ⚠️ **STRICTLY NOT FOR PUBLIC USE OR DISTRIBUTION**
+> 
+> The source code, design assets, and intellectual property contained within this repository belong exclusively to **Priyangshu Dutta**. Unauthorized use, copying, modification, merging, publishing, distribution, sublicensing, or sale of copies of this software is strictly prohibited and will result in legal action.
 
----
-
-## 🛡 License
-
-This project is **proprietary and not licensed for public use or distribution**.
-
-See [`LICENSE`](./LICENSE) and [`COPYRIGHT.md`](./COPYRIGHT.md) for more details.
-
-> ⚠️ Unauthorized use, modification, or redistribution of this code is strictly prohibited and may result in legal action.
-
----
-
-© 2024–2025 Priyangshu713. All rights reserved.
-
+© 2024–2026 Priyangshu Dutta. All rights reserved.
