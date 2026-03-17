@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/dialog';
 import MoodTrendChart from './MoodTrendChart';
 import EmotionRadarChart from './EmotionRadarChart';
+import AnalysisVisuals from './AnalysisVisuals';
 import WellnessHistory from './WellnessHistory';
 import Navbar from '@/components/Navbar';
 
@@ -77,6 +78,8 @@ const WellnessJournal: React.FC = () => {
     const [moodScore, setMoodScore] = useState(5);
     const [pastEntries, setPastEntries] = useState<WellnessEntryData[]>([]);
     const [isLoadingEntries, setIsLoadingEntries] = useState(false);
+    const [lastEmotions, setLastEmotions] = useState<string[]>([]);
+    const [lastStress, setLastStress] = useState(5);
     const { toast } = useToast();
     const { geminiTier } = useHealthStore();
     const isPaidUser = geminiTier === 'lite' || geminiTier === 'pro';
@@ -128,6 +131,10 @@ const WellnessJournal: React.FC = () => {
             // Extract emotions and stress from AI analysis
             const emotions = extractEmotionsFromAnalysis(result.analysis);
             const stressLevel = extractStressLevel(result.analysis, moodScore);
+
+            // Store for visuals display
+            setLastEmotions(emotions);
+            setLastStress(stressLevel);
 
             // Save to server for cross-device sync
             const userId = localStorage.getItem('userEmail');
@@ -310,12 +317,22 @@ const WellnessJournal: React.FC = () => {
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ duration: 0.3 }}
+                                    className="space-y-4"
                                 >
+                                    {/* Visual Dashboard */}
+                                    <AnalysisVisuals
+                                        analysisText={analysis.analysis}
+                                        moodScore={moodScore}
+                                        emotions={lastEmotions}
+                                        stressLevel={lastStress}
+                                    />
+
+                                    {/* Detailed AI Text */}
                                     <Card className="border-primary/20 bg-primary/5">
                                         <CardHeader className="pb-2">
                                             <CardTitle className="flex items-center gap-2 text-lg">
                                                 <Brain className="h-5 w-5 text-primary" />
-                                                AI Analysis
+                                                Detailed Analysis
                                             </CardTitle>
                                             <CardDescription>
                                                 Based on your journal entry from {new Date(analysis.date).toLocaleDateString()}
