@@ -409,12 +409,12 @@ const Navbar = () => {
 
           {!isAuthenticated && !isDoctorUser ? (
             <Button
-              variant="outline"
+              variant={isHomePage && !isScrolled ? "default" : "outline"}
               size="sm"
               className={cn(
-                "ml-2 transition-colors",
+                "ml-2 transition-all duration-300",
                 (isHomePage && !isScrolled) 
-                  ? "border-white/50 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm" 
+                  ? "bg-white text-[#1a7a6d] hover:bg-white/90 border-0 shadow-lg" 
                   : "border-primary text-primary hover:bg-primary/10 hover:text-primary"
               )}
               onClick={() => navigate('/profile')}
