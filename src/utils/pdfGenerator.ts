@@ -1,6 +1,7 @@
 import { jsPDF, GState } from 'jspdf';
 import { HealthData } from '@/store/healthStore';
 import { Doctor } from '@/types/doctor';
+import { WellnessEntryData } from '@/services/WellnessSyncService';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  MODERN CLINICAL COLOUR PALETTE (Tailwind-inspired)
@@ -296,12 +297,313 @@ const drawModernTable = (
 
 
 // ═══════════════════════════════════════════════════════════════════════════
+//  WELLNESS / MENTAL HEALTH DRAWING PRIMITIVES
+// ═══════════════════════════════════════════════════════════════════════════
+
+
+/** Summarise long AI analysis text into 1-2 lines */
+const summariseAnalysis = (analysis: string, maxLen = 90): string => {
+    if (!analysis) return 'No AI analysis available';
+    // Strip markdown formatting
+    let plain = analysis.replace(/[#*_`>\-\[\]()]/g, ' ').replace(/\s+/g, ' ').trim();
+    // Take first meaningful sentence(s)
+    const sentences = plain.split(/(?<=[.!?])\s+/).filter(s => s.length > 10);
+    let summary = sentences.slice(0, 2).join(' ');
+    if (summary.length > maxLen) summary = summary.substring(0, maxLen - 3) + '...';
+    return summary || plain.substring(0, maxLen);
+};
+
+/** Calculate mental stability assessment */
+const getStabilityAssessment = (entries: WellnessEntryData[]): {
+    label: string; color: [number, number, number]; lightBg: [number, number, number];
+    avgMood: number; avgStress: number; moodVariability: number;
+} => {
+    if (entries.length === 0) return { label: 'Insufficient Data', color: C.light, lightBg: C.bgLight, avgMood: 0, avgStress: 0, moodVariability: 0 };
+    const moods = entries.map(e => e.moodScore);
+    const stresses = entries.map(e => e.stressLevel);
+    const avgMood = moods.reduce((a, b) => a + b, 0) / moods.length;
+    const avgStress = stresses.reduce((a, b) => a + b, 0) / stresses.length;
+    const variance = moods.reduce((sum, m) => sum + Math.pow(m - avgMood, 2), 0) / moods.length;
+    const moodVariability = Math.sqrt(variance);
+
+    if (avgMood >= 7 && moodVariability < 2) return { label: 'Stable', color: C.green, lightBg: C.greenLight, avgMood: Math.round(avgMood * 10) / 10, avgStress: Math.round(avgStress * 10) / 10, moodVariability: Math.round(moodVariability * 10) / 10 };
+    if (avgMood >= 4) return { label: 'Moderate – Monitor', color: C.amber, lightBg: C.amberLight, avgMood: Math.round(avgMood * 10) / 10, avgStress: Math.round(avgStress * 10) / 10, moodVariability: Math.round(moodVariability * 10) / 10 };
+    return { label: 'Attention Required', color: C.red, lightBg: C.redLight, avgMood: Math.round(avgMood * 10) / 10, avgStress: Math.round(avgStress * 10) / 10, moodVariability: Math.round(moodVariability * 10) / 10 };
+};
+
+/** Draw a mood trend line chart */
+const drawMoodTrendChart = (
+    doc: jsPDF,
+    entries: WellnessEntryData[],
+    x: number, y: number, chartW: number, chartH: number,
+): number => {
+    const sorted = [...entries].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    if (sorted.length === 0) return y;
+
+    // Chart area
+    const leftPad = 12;
+    const bottomPad = 14;
+    const plotX = x + leftPad;
+    const plotW = chartW - leftPad - 4;
+    const plotH = chartH - bottomPad - 4;
+    const plotY = y;
+
+    // Color zones (background bands)
+    const zoneH3 = (plotH * 3) / 10; // mood 8-10 (top)
+    const zoneH2 = (plotH * 3) / 10; // mood 5-7 (middle)
+    const zoneH1 = (plotH * 4) / 10; // mood 1-4 (bottom)
+
+    doc.setFillColor(220, 252, 231); // green-100
+    doc.rect(plotX, plotY, plotW, zoneH3, 'F');
+    doc.setFillColor(254, 249, 195); // amber-100
+    doc.rect(plotX, plotY + zoneH3, plotW, zoneH2, 'F');
+    doc.setFillColor(254, 226, 226); // red-100
+    doc.rect(plotX, plotY + zoneH3 + zoneH2, plotW, zoneH1, 'F');
+
+    // Zone labels on right
+    doc.setFontSize(5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...C.green);
+    doc.text('Good', plotX + plotW + 1, plotY + zoneH3 / 2 + 1);
+    doc.setTextColor(...C.amber);
+    doc.text('Fair', plotX + plotW + 1, plotY + zoneH3 + zoneH2 / 2 + 1);
+    doc.setTextColor(...C.red);
+    doc.text('Low', plotX + plotW + 1, plotY + zoneH3 + zoneH2 + zoneH1 / 2 + 1);
+
+    // Y-axis labels
+    doc.setFontSize(5);
+    doc.setTextColor(...C.light);
+    for (let v = 1; v <= 10; v += 3) {
+        const posY = plotY + plotH - ((v - 1) / 9) * plotH;
+        doc.text(`${v}`, x + 2, posY + 1);
+        // Grid line
+        doc.setDrawColor(230, 230, 230);
+        doc.setLineWidth(0.1);
+        doc.line(plotX, posY, plotX + plotW, posY);
+    }
+
+    // Plot line
+    const step = plotW / Math.max(sorted.length - 1, 1);
+    doc.setDrawColor(...C.primary);
+    doc.setLineWidth(0.8);
+
+    for (let i = 0; i < sorted.length - 1; i++) {
+        const x1 = plotX + i * step;
+        const y1 = plotY + plotH - ((sorted[i].moodScore - 1) / 9) * plotH;
+        const x2 = plotX + (i + 1) * step;
+        const y2 = plotY + plotH - ((sorted[i + 1].moodScore - 1) / 9) * plotH;
+        doc.line(x1, y1, x2, y2);
+    }
+
+    // Data points
+    sorted.forEach((entry, i) => {
+        const px = plotX + i * step;
+        const py = plotY + plotH - ((entry.moodScore - 1) / 9) * plotH;
+        const mColor = entry.moodScore >= 7 ? C.green : entry.moodScore >= 4 ? C.amber : C.red;
+        doc.setFillColor(...mColor);
+        doc.circle(px, py, 1.2, 'F');
+    });
+
+    // X-axis date labels (show up to 6)
+    doc.setFontSize(4.5);
+    doc.setTextColor(...C.light);
+    const labelCount = Math.min(sorted.length, 6);
+    const labelStep = Math.max(1, Math.floor(sorted.length / labelCount));
+    for (let i = 0; i < sorted.length; i += labelStep) {
+        const d = new Date(sorted[i].date);
+        const label = `${d.getDate()}/${d.getMonth() + 1}`;
+        const px = plotX + i * step;
+        doc.text(label, px - 3, plotY + plotH + 5);
+    }
+
+    // Border
+    doc.setDrawColor(...C.border);
+    doc.setLineWidth(0.3);
+    doc.rect(plotX, plotY, plotW, plotH);
+
+    return y + chartH + 4;
+};
+
+/** Draw stress level horizontal bar */
+const drawStressBar = (
+    doc: jsPDF, avgStress: number,
+    x: number, y: number, barW: number,
+): number => {
+    const barH = 6;
+    const stressColor: [number, number, number] = avgStress <= 3 ? C.green : avgStress <= 6 ? C.amber : C.red;
+    const stressLabel = avgStress <= 3 ? 'Low' : avgStress <= 6 ? 'Moderate' : 'High';
+
+    doc.setFontSize(8);
+    doc.setTextColor(...C.dark);
+    doc.text('Average Stress Level', x, y);
+
+    // Track
+    doc.setFillColor(...C.border);
+    doc.roundedRect(x, y + 3, barW, barH, 3, 3, 'F');
+
+    // Fill
+    const fillW = Math.max(4, (avgStress / 10) * barW);
+    doc.setFillColor(...stressColor);
+    doc.roundedRect(x, y + 3, fillW, barH, 3, 3, 'F');
+
+    // Value + label
+    doc.setFontSize(9);
+    doc.setTextColor(...stressColor);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${avgStress}/10`, x + barW + 4, y + 8);
+    doc.setFontSize(7);
+    doc.text(stressLabel.toUpperCase(), x + barW + 18, y + 8);
+    doc.setFont('helvetica', 'normal');
+
+    return y + 16;
+};
+
+/** Draw top emotions as pill badges */
+const drawTopEmotions = (
+    doc: jsPDF, entries: WellnessEntryData[],
+    x: number, y: number, maxW: number,
+): number => {
+    // Count emotion frequencies
+    const freq: Record<string, number> = {};
+    entries.forEach(e => e.emotions?.forEach(em => { freq[em] = (freq[em] || 0) + 1; }));
+    const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    if (sorted.length === 0) return y;
+
+    doc.setFontSize(8);
+    doc.setTextColor(...C.dark);
+    doc.text('Top Detected Emotions', x, y);
+    y += 5;
+
+    let cx = x;
+    sorted.forEach(([emotion, count]) => {
+        const label = `${emotion} (${count})`;
+        doc.setFontSize(7);
+        const tw = doc.getTextWidth(label) + 8;
+        if (cx + tw > x + maxW) { cx = x; y += 9; }
+
+        doc.setFillColor(...C.primaryLight);
+        doc.roundedRect(cx, y, tw, 7, 3.5, 3.5, 'F');
+        doc.setTextColor(...C.primary);
+        doc.setFont('helvetica', 'bold');
+        doc.text(label, cx + 4, y + 5);
+        doc.setFont('helvetica', 'normal');
+        cx += tw + 3;
+    });
+
+    return y + 12;
+};
+
+/** Draw Journal Keywords Bar Chart */
+const drawKeywordBarChart = (
+    doc: jsPDF, entries: WellnessEntryData[],
+    x: number, y: number, chartW: number, chartH: number,
+): number => {
+    const stopWords = new Set([
+        'the','and','a','to','of','in','i','is','that','it','on','you','this','for','but','with','are','have','be','at','or','as','was','so','if','out','not','my','they','from','we','about','me','am','feel','feeling','like','just','when','what','how','very','really','because','much','more','been','im','will','do','can','some',
+        'today','its','ive','felt','bit','lot','day','time','get','got','going','make','think','know','see','want','would','could','should','things','thing','now','did','didnt','dont','doesnt','wasnt','isnt','cant','wouldnt','couldnt','shouldnt','ill','id','theyre','youre','weve','then','than','there','their','here','where','why','who','which',
+        'also','even','only','too','by','an','has','had','up','down','right','left','back','after','before','over','under','through','these','those','our','your','him','her','his','hers','them','us','into','any','all','no','yes','one','two','new','old','always','never','sometimes','often','still','go','come','went','came','take','took','give','gave','say','said','tell','told','find','found','let','put','keep','kept','need','needed','use','used','work','worked','try','tried','start','started','stop','stopped','call','called','ask','asked','leave','show','feelings',
+        'yesterday','tomorrow','tonight','morning','afternoon','evening','night','week','month','year','hour','minute','second','few','many','most','least','less','quite','rather','somewhat','almost','actually','yeah','nope','okay','ok','sure','maybe','probably','definitely'
+    ]);
+    const wordCounts: Record<string, number> = {};
+    entries.forEach(e => {
+        const words = (e.entry || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/);
+        words.forEach(w => {
+            if (w.length > 2 && !stopWords.has(w)) {
+                wordCounts[w] = (wordCounts[w] || 0) + 1;
+            }
+        });
+    });
+    
+    const sorted = Object.entries(wordCounts).sort((a,b) => b[1] - a[1]).slice(0, 5);
+    if (sorted.length === 0) {
+        doc.setFontSize(8);
+        doc.setTextColor(...C.light);
+        doc.text('Not enough journal text.', x, y + 10);
+        return y + chartH;
+    }
+
+    const maxCount = sorted[0][1] || 1;
+    let cy = y;
+    
+    sorted.forEach(([word, count]) => {
+        doc.setFontSize(7);
+        doc.setTextColor(...C.dark);
+        doc.text(word, x, cy + 4);
+        
+        const barX = x + 30;
+        const maxBarW = chartW - 40;
+        const barW = Math.max(5, (count / maxCount) * maxBarW);
+        
+        doc.setFillColor(...C.primary);
+        doc.roundedRect(barX, cy, barW, 6, 2, 2, 'F');
+        
+        doc.setFontSize(6);
+        doc.setTextColor(...C.white);
+        doc.text(`${count}`, barX + barW - (count >= 10 ? 6 : 4), cy + 4);
+        
+        cy += 8;
+    });
+
+    return y + chartH;
+};
+
+/** Draw Stability Scatter Plot (Mood vs Stress) */
+const drawStabilityScatterPlot = (
+    doc: jsPDF, entries: WellnessEntryData[],
+    x: number, y: number, chartW: number, chartH: number,
+): number => {
+    if (entries.length === 0) return y + chartH;
+
+    const plotX = x + 15;
+    const plotW = chartW - 20;
+    const plotH = chartH - 15;
+    const plotY = y + 5;
+
+    doc.setDrawColor(...C.border);
+    doc.setLineWidth(0.5);
+    doc.line(plotX, plotY + plotH, plotX + plotW, plotY + plotH); 
+    doc.line(plotX, plotY, plotX, plotY + plotH); 
+    
+    doc.setFontSize(5);
+    doc.setTextColor(...C.mid);
+    doc.text('Stress Level (1-10) →', plotX + plotW - 35, plotY + plotH + 8);
+    doc.text('Mood ↑', plotX - 8, plotY + Math.max(plotH/2, 10), { angle: 90 });
+    
+    doc.setDrawColor(245, 245, 245);
+    doc.setLineWidth(0.2);
+    for(let i=1; i<=10; i+=3) {
+        const px = plotX + ((i-1)/9)*plotW;
+        doc.text(`${i}`, px - 1, plotY + plotH + 3.5);
+        doc.line(px, plotY, px, plotY + plotH);
+        
+        const py = plotY + plotH - ((i-1)/9)*plotH;
+        doc.text(`${i}`, plotX - 4, py + 1.5);
+        doc.line(plotX, py, plotX + plotW, py);
+    }
+
+    entries.forEach(e => {
+        const px = plotX + ((e.stressLevel - 1) / 9) * plotW;
+        const py = plotY + plotH - ((e.moodScore - 1) / 9) * plotH;
+        const mColor = e.moodScore >= 7 ? C.green : e.moodScore >= 4 ? C.amber : C.red;
+        
+        doc.setFillColor(...mColor);
+        doc.circle(px, py, 1.5, 'F');
+        doc.setDrawColor(255, 255, 255);
+        doc.setLineWidth(0.3);
+        doc.circle(px, py, 1.5, 'S');
+    });
+
+    return y + chartH + 5;
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
 //  MAIN PDF GENERATOR
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const generatePDF = async (
     healthData: HealthData,
     doctor?: Doctor,
+    wellnessEntries?: WellnessEntryData[],
 ): Promise<Blob> => {
     const logoBase64 = await fetchImageAsBase64('/logo.png');
     const doc = new jsPDF();
@@ -580,6 +882,182 @@ export const generatePDF = async (
         y += 28;
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    //  MENTAL WELLNESS REPORT (new page)
+    // ═══════════════════════════════════════════════════════════════════════
+    if (wellnessEntries !== undefined) {
+        doc.addPage();
+        addWatermark(doc);
+        y = 20;
+
+        // Page Header
+        doc.addImage(logoBase64, 'PNG', 15, 12, 14, 0);
+        doc.setFontSize(14);
+        doc.setTextColor(...C.dark);
+        doc.setFont('helvetica', 'bold');
+        doc.text('MENTAL WELLNESS REPORT', 34, 18);
+        doc.setFontSize(8);
+        doc.setTextColor(...C.mid);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`${patientName}  •  ${dateStr}  •  ${wellnessEntries.length} journal entries`, 34, 23);
+
+        doc.setDrawColor(...C.border);
+        doc.setLineWidth(0.3);
+        doc.line(15, 28, pw - 15, 28);
+        y = 36;
+
+        if (wellnessEntries.length > 0) {
+        // ─── MENTAL STABILITY ASSESSMENT ────────────────────────────────
+        const assessment = getStabilityAssessment(wellnessEntries);
+
+        doc.setFillColor(...assessment.lightBg);
+        doc.setDrawColor(...assessment.color);
+        doc.setLineWidth(0.5);
+        doc.roundedRect(15, y, pw - 30, 26, 3, 3, 'FD');
+
+        // Status badge
+        doc.setFillColor(...assessment.color);
+        const badgeText = assessment.label.toUpperCase();
+        doc.setFontSize(8);
+        const badgeW = doc.getTextWidth(badgeText) + 12;
+        doc.roundedRect(20, y + 4, badgeW, 8, 4, 4, 'F');
+        doc.setTextColor(...C.white);
+        doc.setFont('helvetica', 'bold');
+        doc.text(badgeText, 26, y + 9.5);
+        doc.setFont('helvetica', 'normal');
+
+        // Title
+        doc.setFontSize(11);
+        doc.setTextColor(...C.dark);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Mental Stability Assessment', 20 + badgeW + 4, y + 10);
+        doc.setFont('helvetica', 'normal');
+
+        // Metrics row
+        doc.setFontSize(7);
+        doc.setTextColor(...C.mid);
+        const metricsY = y + 18;
+        doc.text(`Avg Mood: ${assessment.avgMood}/10`, 20, metricsY);
+        doc.text(`Avg Stress: ${assessment.avgStress}/10`, 60, metricsY);
+        doc.text(`Mood Variability: ${assessment.moodVariability} (σ)`, 105, metricsY);
+        doc.text(`Entries: ${wellnessEntries.length}`, 160, metricsY);
+
+        y += 34;
+
+        // ─── MOOD TREND CHART ──────────────────────────────────────────
+        y = drawSectionHeader(doc, 'Mood Trend (Last 30 Days)', 15, y, pw);
+        y += 2;
+        y = drawMoodTrendChart(doc, wellnessEntries.slice(0, 30), 15, y, pw - 30, 50);
+        y += 4;
+
+        // ─── STRESS & EMOTION OVERVIEW ─────────────────────────────────
+        y = ensureSpace(doc, y, 45);
+        y = drawSectionHeader(doc, 'Stress & Emotion Overview', 15, y, pw);
+        y += 2;
+        y = drawStressBar(doc, assessment.avgStress, 15, y, (pw - 80) / 2);
+        y = drawTopEmotions(doc, wellnessEntries, 15, y, pw - 30);
+        y += 4;
+
+        // ─── KEYWORDS & STABILITY PLOT ─────────────────────────────────
+        y = ensureSpace(doc, y, 60);
+        const colW = (pw - 40) / 2;
+        
+        doc.setFontSize(10);
+        doc.setTextColor(...C.primary);
+        doc.setFont('helvetica', 'bold');
+        doc.text('JOURNAL KEYWORDS', 15, y);
+        doc.text('MOOD VS STRESS STABILITY', 15 + colW + 10, y);
+        doc.setFont('helvetica', 'normal');
+        y += 6;
+        
+        const chartsY = y;
+        drawKeywordBarChart(doc, wellnessEntries, 15, chartsY, colW, 40);
+        drawStabilityScatterPlot(doc, wellnessEntries, 15 + colW + 10, chartsY, colW, 40);
+        y += 45;
+
+        // ─── JOURNAL SUMMARIES TABLE ───────────────────────────────────
+        y = ensureSpace(doc, y, 30);
+        y = drawSectionHeader(doc, 'Journal Entries (User Input)', 15, y, pw);
+        y += 2;
+
+        // Table header
+        doc.setFontSize(6.5);
+        doc.setTextColor(...C.light);
+        doc.setFont('helvetica', 'bold');
+        doc.text('DATE', 15, y + 4);
+        doc.text('MOOD', 42, y + 4);
+        doc.text('JOURNAL ENTRY', 62, y + 4);
+        doc.setFont('helvetica', 'normal');
+        doc.setDrawColor(...C.border);
+        doc.setLineWidth(0.3);
+        doc.line(15, y + 6, pw - 15, y + 6);
+        y += 9;
+
+        // Rows (max 10 entries)
+        const displayEntries = wellnessEntries.slice(0, 10);
+        displayEntries.forEach((we, ri) => {
+            const entryLines = doc.splitTextToSize(we.entry || 'No text entry provided.', pw - 15 - 62);
+            const rowH = Math.max(10, entryLines.length * 4 + 4);
+            
+            y = ensureSpace(doc, y, rowH + 2);
+
+            // Striping
+            if (ri % 2 === 0) {
+                doc.setFillColor(...C.bgLight);
+                doc.rect(15, y - 3, pw - 30, rowH, 'F');
+            }
+
+            // Date
+            const d = new Date(we.date);
+            const dateLabel = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+            doc.setFontSize(7);
+            doc.setTextColor(...C.dark);
+            doc.text(dateLabel, 15, y + 3);
+
+            // Mood
+            const moodColor = we.moodScore >= 7 ? C.green : we.moodScore >= 4 ? C.amber : C.red;
+            doc.setFontSize(8);
+            doc.setTextColor(...moodColor);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${we.moodScore}/10`, 42, y + 3);
+            doc.setFont('helvetica', 'normal');
+
+            // Journal Entry
+            doc.setFontSize(6.5);
+            doc.setTextColor(...C.mid);
+            let ly = y + 3;
+            entryLines.forEach((line: string) => {
+                doc.text(line, 62, ly);
+                ly += 4;
+            });
+
+            y += rowH;
+        });
+
+        if (wellnessEntries.length > 10) {
+            doc.setFontSize(6.5);
+            doc.setTextColor(...C.light);
+            doc.text(`+ ${wellnessEntries.length - 10} more entries not shown`, 15, y + 3);
+            y += 8;
+        }
+        } else {
+            // No wellness entries message
+            y = ensureSpace(doc, y, 20);
+            doc.setFillColor(...C.amberLight);
+            doc.setDrawColor(...C.amber);
+            doc.setLineWidth(0.3);
+            doc.roundedRect(15, y, pw - 30, 20, 2, 2, 'FD');
+            doc.setFontSize(9);
+            doc.setTextColor(...C.amber);
+            doc.setFont('helvetica', 'bold');
+            doc.text('NO WELLNESS DATA', 20, y + 8);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(...C.dark);
+            doc.text('The patient opted to share mental wellness data, but no journal entries exist on record.', 45, y + 8);
+            y += 28;
+        }
+    }
+
     // ─── MEDICAL DISCLAIMER ─────────────────────────────────────────────
     y = ensureSpace(doc, y, 24);
     doc.setDrawColor(...C.border);
@@ -632,8 +1110,9 @@ export const generatePDF = async (
 export const downloadPDF = async (
     healthData: HealthData,
     doctor?: Doctor,
+    wellnessEntries?: WellnessEntryData[],
 ): Promise<void> => {
-    const pdfBlob = await generatePDF(healthData, doctor);
+    const pdfBlob = await generatePDF(healthData, doctor, wellnessEntries);
     const url = URL.createObjectURL(pdfBlob);
 
     const patientName = getPatientName().replace(/\s+/g, '_').toLowerCase();

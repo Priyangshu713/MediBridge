@@ -90,6 +90,12 @@ export const loginUser = async (credentials: { email: string; password: string }
             throw new Error(data.message || 'Login failed');
         }
 
+        // Call synchronizeTier to let the backend auto-expire any stale sub,
+        // and fetch the actual active tier, so we don't start with a 'pro' tier
+        // that's already expired but not auto-expired in backend yet.
+        // But since synchronizeTier relies on token in localStorage, we must NOT 
+        // call it here, because local storage token is set AFTER this function returns!
+        // So we just return data here and the frontend component (LoginForm) will call it. 
         return data;
     } catch (error) {
         // If login fails with "Invalid email or password", the account exists in the database
@@ -392,10 +398,16 @@ export const synchronizeTier = async (): Promise<string> => {
 
         // Write the server's answer into localStorage (not the other way around!)
         localStorage.setItem('geminiTier', serverTier);
-        if (data.subscription?.billingCycle) {
-            localStorage.setItem('billingCycle', data.subscription.billingCycle);
+        if (data.subscription) {
+            if (data.subscription.billingCycle) {
+                localStorage.setItem('billingCycle', data.subscription.billingCycle);
+            }
+            if (data.subscription.endDate) {
+                localStorage.setItem('trialEndDate', data.subscription.endDate);
+            }
         } else {
             localStorage.removeItem('billingCycle');
+            localStorage.removeItem('trialEndDate');
         }
 
         window.dispatchEvent(new CustomEvent('geminiTierChanged', { detail: { tier: serverTier } }));

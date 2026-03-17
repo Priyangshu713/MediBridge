@@ -97,11 +97,19 @@ function App() {
       }
     }
 
-    // If authenticated, synchronize tier with backend
+    // If authenticated, synchronize tier with backend immediately and periodically
     if (isAuth && token) {
-      synchronizeTier().catch(error => {
-        console.error('Background tier synchronization failed:', error);
-      });
+      const sync = () => {
+        synchronizeTier().catch(error => {
+          console.error('Background tier synchronization failed:', error);
+        });
+      };
+      
+      sync();
+      
+      // Auto-sync every 6 hours to handle expirations for users who never close the tab
+      const intervalId = setInterval(sync, 1000 * 60 * 60 * 6);
+      return () => clearInterval(intervalId);
     }
   }, []);
 

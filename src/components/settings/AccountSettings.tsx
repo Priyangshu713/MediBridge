@@ -108,8 +108,15 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ isOpen, onClose }) =>
 
                     // If backend downgraded to free, update local tier
                     if (response.tier && response.tier !== profileData?.tier) {
-                        setProfileData(prev => prev ? { ...prev, tier: response.tier } : prev);
+                        setProfileData(prev => prev ? { ...prev, tier: response.tier as 'free' | 'lite' | 'pro' } : prev);
                         localStorage.setItem('geminiTier', response.tier);
+                        window.dispatchEvent(new CustomEvent('geminiTierChanged', { detail: { tier: response.tier } }));
+                        
+                        // If there is no active subscription, clear billingCycle and trialEndDate
+                        if (!response.subscription) {
+                            localStorage.removeItem('billingCycle');
+                            localStorage.removeItem('trialEndDate');
+                        }
                     }
                 } catch {
                     setSubscriptionDetails(null);
@@ -910,6 +917,10 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ isOpen, onClose }) =>
                                             const daysLeft = Math.floor(hoursLeft / 24);
                                             const remainingHours = hoursLeft % 24;
                                             const isExpired = trialEndDate ? now > trialEndDate : false;
+                                            
+                                            // Handle case where trialEndDate is missing but cycle is still 'trial'
+                                            // by defaulting hoursLeft to 0 and showing "trial has expired" if no end date exists.
+                                            const effectiveIsExpired = isExpired || !trialEndDate;
 
                                             return (
                                                 <div className="space-y-3">
@@ -930,7 +941,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ isOpen, onClose }) =>
                                                         </div>
                                                     </div>
 
-                                                    {!isExpired ? (
+                                                    {!effectiveIsExpired ? (
                                                         <div className="p-3 rounded-md bg-blue-50 border border-blue-200">
                                                             <p className="text-blue-800 font-medium">
                                                                 ⏰ {daysLeft > 0 ? `${daysLeft}d ${remainingHours}h` : `${remainingHours}h`} remaining

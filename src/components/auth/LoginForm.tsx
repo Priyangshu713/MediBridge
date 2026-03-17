@@ -17,7 +17,7 @@ import { motion } from 'framer-motion';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate, Link } from 'react-router-dom';
 import { dispatchAuthEvent } from '@/App';
-import { loginUser, loginWithGoogle } from '@/api/auth';
+import { loginUser, loginWithGoogle, synchronizeTier } from '@/api/auth';
 import { useHealthStore } from '@/store/healthStore';
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 
@@ -78,6 +78,9 @@ const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
       // Load health profile from server (cross-device sync)
       await loadFromServer(data.email);
 
+      // Auto-expire trials / sync genuine status from server BEFORE navigating
+      await synchronizeTier();
+
       // Show success toast
       toast({
         title: "Login successful",
@@ -133,6 +136,9 @@ const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 
       // Load health profile from server (cross-device sync)
       await loadFromServer(result.email);
+
+      // Auto-expire trials / sync genuine status from server BEFORE navigating
+      await synchronizeTier();
 
       toast({
         title: "Login successful",
