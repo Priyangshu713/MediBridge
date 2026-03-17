@@ -333,17 +333,17 @@ const Navbar = () => {
   return (
     <nav
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out mobile-safe-bottom',
+        'fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out',
         isScrolled
           ? 'py-2 bg-slate-900 shadow-md text-white'
-          : 'py-3 sm:py-4 bg-white shadow-sm text-foreground border-b',
-        isHomePage && !isScrolled && 'bg-transparent border-0 shadow-none'
+          : (isHomePage
+            ? 'py-3 sm:py-4 bg-transparent border-0 shadow-none'
+            : 'py-3 sm:py-4 bg-white shadow-sm text-foreground border-b')
       )}
       style={{
         opacity: showNavbar ? 1 : 0,
         pointerEvents: showNavbar ? 'auto' : 'none',
         transform: `translateY(${showNavbar ? '0' : '-100%'})`,
-        paddingTop: isMobile ? 'env(safe-area-inset-top, 0px)' : '',
       }}
     >
       <div className="container mx-auto px-4 flex justify-between items-center">
@@ -483,12 +483,11 @@ const Navbar = () => {
           )}
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
+        <button
+          type="button"
           className={cn(
-            "md:hidden mobile-touch-target p-2 rounded-full transition-all duration-300",
-            (isHomePage && !isScrolled) ? "text-white hover:bg-white/10" : "hover:bg-black/10 text-foreground"
+            "md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-full transition-all duration-300 focus:outline-none",
+            (isHomePage && !isScrolled) ? "text-white hover:bg-white/10" : "text-foreground hover:bg-black/10"
           )}
           onClick={toggleMenu}
           aria-label="Toggle menu"
@@ -520,7 +519,7 @@ const Navbar = () => {
               )}
             />
           </div>
-        </Button>
+        </button>
       </div>
 
 
