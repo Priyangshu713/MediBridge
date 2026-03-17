@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar, CreditCard, CheckCircle, Loader2, AlertCircle, Crown, FileText, ArrowUpCircle, Download, Sparkles } from 'lucide-react';
+import { Calendar, CreditCard, CheckCircle, Loader2, AlertCircle, Crown, FileText, ArrowUpCircle, Download, Sparkles, Heart } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useHealthStore } from '@/store/healthStore';
@@ -11,6 +11,7 @@ import { createAppointmentOrder, verifyAppointmentPayment } from '@/api/auth';
 import { generatePDF, downloadPDF } from '@/utils/pdfGenerator';
 import { Doctor } from '@/types/doctor';
 import { supabase } from '@/lib/supabase';
+import { loadWellnessEntries, WellnessEntryData } from '@/services/WellnessSyncService';
 
 interface AppointmentPaymentDialogProps {
   isOpen: boolean;
@@ -51,6 +52,9 @@ const AppointmentPaymentDialog: React.FC<AppointmentPaymentDialogProps> = ({
   const [pdfGenerated, setPdfGenerated] = useState(false);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [shareWellnessData, setShareWellnessData] = useState(true);
+  const [wellnessEntries, setWellnessEntries] = useState<WellnessEntryData[]>([]);
+  const [loadingWellness, setLoadingWellness] = useState(false);
 
   const doctorId = doctor._id || doctor.id || '';
   const doctorName = `Dr. ${doctor.firstName} ${doctor.lastName}`;
@@ -71,8 +75,27 @@ const AppointmentPaymentDialog: React.FC<AppointmentPaymentDialogProps> = ({
       setStep('confirm');
       setPdfGenerated(false);
       setPdfBlob(null);
+      setWellnessEntries([]);
     }
   }, [isOpen]);
+
+  // Fetch wellness entries when sharing is enabled
+  useEffect(() => {
+    if (isOpen && shareWellnessData) {
+      const userId = localStorage.getItem('userEmail');
+      if (!userId) return;
+      setLoadingWellness(true);
+      loadWellnessEntries(userId)
+        .then(entries => setWellnessEntries(entries))
+        .catch(() => setWellnessEntries([]))
+        .finally(() => setLoadingWellness(false));
+    } else if (!shareWellnessData) {
+      setWellnessEntries([]);
+    }
+    // Invalidate cached PDF when wellness toggle changes
+    setPdfGenerated(false);
+    setPdfBlob(null);
+  }, [isOpen, shareWellnessData]);
 
   // ── Razorpay script loader ───────────────────────────────────────────
   const loadRazorpayScript = (): Promise<boolean> =>
@@ -108,7 +131,8 @@ const AppointmentPaymentDialog: React.FC<AppointmentPaymentDialogProps> = ({
     } else {
       try {
         setDownloadingPdf(true);
-        await downloadPDF(healthData, doctor);
+        const entriesToShare = shareWellnessData ? wellnessEntries : undefined;
+        await downloadPDF(healthData, doctor, entriesToShare);
         setDownloadingPdf(false);
         toast({ title: 'PDF Downloaded', description: 'Your health data PDF has been downloaded successfully.' });
       } catch {
@@ -127,7 +151,8 @@ const AppointmentPaymentDialog: React.FC<AppointmentPaymentDialogProps> = ({
     if (shareHealthData) {
       setPdfGenerating(true);
       try {
-        const generatedPdf = await generatePDF(healthData, doctor);
+        const entriesToShare = shareWellnessData ? wellnessEntries : undefined;
+        const generatedPdf = await generatePDF(healthData, doctor, entriesToShare);
         setPdfBlob(generatedPdf);
         setPdfGenerated(true);
         base64Pdf = await blobToBase64(generatedPdf);
@@ -277,6 +302,54 @@ const AppointmentPaymentDialog: React.FC<AppointmentPaymentDialogProps> = ({
             <p className="text-xs text-amber-700 dark:text-amber-400/80">
               Advanced health analysis not yet completed. Only basic health data will be shared.
             </p>
+          </div>
+        )}
+
+        {/* Wellness Data Sharing Toggle */}
+        <div className="flex items-start space-x-2 pt-1">
+          <Checkbox
+            id="share-wellness-data"
+            checked={shareWellnessData}
+            onCheckedChange={(checked) => setShareWellnessData(!!checked)}
+          />
+          <div className="grid gap-1 leading-none">
+            <label
+              htmlFor="share-wellness-data"
+              className="text-sm font-medium leading-none cursor-pointer flex items-center gap-1.5"
+            >
+              <Heart className="h-3.5 w-3.5 text-pink-500" />
+              Include mental wellness data
+            </label>
+            <p className="text-xs text-muted-foreground">
+              Shares journal summaries, mood trends, and stress analysis with the doctor.
+            </p>
+          </div>
+        </div>
+
+        {/* Wellness data preview */}
+        {shareWellnessData && (
+          <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/30 p-3 rounded-md flex items-start gap-3">
+            <Heart className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
+            <div className="text-xs">
+              {loadingWellness ? (
+                <p className="text-purple-700 dark:text-purple-300 flex items-center gap-1">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Loading wellness data...
+                </p>
+              ) : wellnessEntries.length > 0 ? (
+                <>
+                  <p className="font-medium text-sm text-purple-800 dark:text-purple-200">Wellness data to be shared:</p>
+                  <ul className="list-disc ml-4 mt-1 text-purple-600 dark:text-purple-400 space-y-0.5">
+                    <li>{wellnessEntries.length} journal entries with AI summaries</li>
+                    <li>Mood trend chart & mental stability assessment</li>
+                    <li>Stress levels & detected emotions overview</li>
+                  </ul>
+                </>
+              ) : (
+                <p className="text-purple-700 dark:text-purple-300">
+                  No wellness journal entries found. Start journaling in the Wellness section to share mental health data.
+                </p>
+              )}
+            </div>
           </div>
         )}
 
