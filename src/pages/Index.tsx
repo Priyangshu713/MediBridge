@@ -1,9 +1,12 @@
-
 import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import HomeHero from '@/components/home/HomeHero';
+import TrustBar from '@/components/home/TrustBar';
 import FeaturesSection from '@/components/home/FeaturesSection';
 import ProductShowcase from '@/components/home/ProductShowcase';
+
+import PricingSection from '@/components/home/PricingSection';
+import FAQSection from '@/components/home/FAQSection';
 import GetStartedCTA from '@/components/home/GetStartedCTA';
 import HomeFooter from '@/components/home/HomeFooter';
 import HealthInfoDialog from '@/components/HealthInfoDialog';
@@ -65,8 +68,12 @@ const Index = () => {
     <div className="relative min-h-screen overflow-hidden">
       <Navbar />
       <HomeHero />
+      <TrustBar />
       <FeaturesSection />
       <ProductShowcase />
+
+      <PricingSection />
+      <FAQSection />
       <GetStartedCTA />
       <HomeFooter />
       

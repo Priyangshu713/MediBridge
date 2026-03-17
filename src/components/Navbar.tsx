@@ -335,8 +335,8 @@ const Navbar = () => {
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out mobile-safe-bottom',
         isScrolled
-          ? 'py-2 bg-black/70 backdrop-blur-md shadow-md text-white'
-          : 'py-3 sm:py-4 bg-white/90 backdrop-blur-md shadow-sm text-foreground border-b',
+          ? 'py-2 bg-slate-900 shadow-md text-white'
+          : 'py-3 sm:py-4 bg-white shadow-sm text-foreground border-b',
         isHomePage && !isScrolled && 'bg-transparent border-0 shadow-none'
       )}
       style={{
@@ -349,12 +349,36 @@ const Navbar = () => {
       <div className="container mx-auto px-4 flex justify-between items-center">
         <Link
           to="/"
-          className="flex items-center"
+          className="flex items-center gap-2"
         >
-          <span className="text-gradient font-bold text-lg sm:text-xl md:text-2xl tracking-tight animate-fade-in">
-            <Heart className="inline-block mr-1 sm:mr-2 h-4 w-4 text-primary animate-pulse-slow" />
-            Medi<span className="font-extralight">Bridge</span>
-          </span>
+          <img
+            src="/medibridge-logo.png"
+            alt="MediBridge Logo"
+            className={cn(
+              "h-10 sm:h-12 w-auto object-contain animate-fade-in",
+              (isScrolled || (isHomePage && !isScrolled)) && "brightness-0 invert"
+            )}
+          />
+          <div className="flex flex-col leading-tight animate-fade-in">
+            <span
+              style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700 }}
+              className={cn(
+                "text-lg sm:text-xl md:text-2xl tracking-tight transition-colors duration-300",
+                (isScrolled || (isHomePage && !isScrolled)) ? "text-white" : "text-[#1a7a6d]"
+              )}
+            >
+              Medi<span style={{ fontWeight: 700 }}>Bridge</span>
+            </span>
+            <span
+              style={{ fontFamily: "'Lato', sans-serif", fontWeight: 400 }}
+              className={cn(
+                "text-[7px] sm:text-[8px] md:text-[9px] tracking-[0.15em] uppercase transition-colors duration-300",
+                (isScrolled || (isHomePage && !isScrolled)) ? "text-white/80" : "text-[#3a9d8f]"
+              )}
+            >
+              Bridging Care, Connecting Health
+            </span>
+          </div>
         </Link>
 
         <div className="hidden md:flex items-center space-x-1">
@@ -372,7 +396,7 @@ const Navbar = () => {
                   'px-3 py-2 rounded-full transition-all duration-300 ease-in-out flex items-center text-sm font-medium',
                   location.pathname === item.path
                     ? 'text-primary bg-primary/10 backdrop-blur-sm'
-                    : 'hover:text-primary hover:bg-black/10'
+                    : (isHomePage && !isScrolled ? 'text-white/90 hover:text-white hover:bg-white/10' : 'hover:text-primary hover:bg-black/10')
                 )}
               >
                 {item.icon}
@@ -387,7 +411,12 @@ const Navbar = () => {
             <Button
               variant="outline"
               size="sm"
-              className="ml-2 border-primary text-primary hover:bg-primary/10 hover:text-primary"
+              className={cn(
+                "ml-2 transition-colors",
+                (isHomePage && !isScrolled) 
+                  ? "border-white/50 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm" 
+                  : "border-primary text-primary hover:bg-primary/10 hover:text-primary"
+              )}
               onClick={() => navigate('/profile')}
             >
               <LogIn className="mr-2 h-4 w-4" />
@@ -403,7 +432,7 @@ const Navbar = () => {
                     className="rounded-full hover:bg-primary/10 transition-all duration-200"
                     aria-label="User menu"
                   >
-                    <Avatar className="h-8 w-8 bg-primary text-white">
+                    <Avatar className="h-8 w-8 bg-primary text-white shadow-sm ring-2 ring-white/20">
                       <AvatarImage
                         src={userProfileImage || getGravatarUrl(userEmail, 64)}
                         alt="Profile"
@@ -457,7 +486,10 @@ const Navbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden hover:bg-black/10 mobile-touch-target p-2 rounded-full transition-all duration-300"
+          className={cn(
+            "md:hidden mobile-touch-target p-2 rounded-full transition-all duration-300",
+            (isHomePage && !isScrolled) ? "text-white hover:bg-white/10" : "hover:bg-black/10 text-foreground"
+          )}
           onClick={toggleMenu}
           aria-label="Toggle menu"
           data-mobile-menu="trigger"
