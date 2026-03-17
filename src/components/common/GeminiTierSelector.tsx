@@ -58,9 +58,8 @@ const GeminiTierSelector: React.FC<GeminiTierSelectorProps> = ({ onToggleAI }) =
     localStorage.setItem('geminiTier', tier);
 
     const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-    const token = localStorage.getItem('token');
 
-    if (isAuthenticated && token) {
+    if (isAuthenticated) {
       synchronizeTier()
         .then(data => {
           toast({

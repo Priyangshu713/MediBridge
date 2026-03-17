@@ -170,6 +170,7 @@ const BarcodeScanner: React.FC = () => {
             try {
               const response = await fetch(`${API_URL}/auth/BarcodeSearchResult`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                   'Content-Type': 'application/json',
                 },

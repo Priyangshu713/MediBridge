@@ -37,6 +37,7 @@ export const registerUser = async (userData: { name: string; email: string; pass
 
     const response = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
+            credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
         },
@@ -78,6 +79,7 @@ export const loginUser = async (credentials: { email: string; password: string }
     try {
         const response = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -118,16 +120,10 @@ export const loginUser = async (credentials: { email: string; password: string }
  * @returns {Promise<Object>} User profile data
  */
 export const getUserProfile = async () => {
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-        throw new Error('No authentication token found');
-    }
-
     const response = await fetch(`${API_URL}/auth/profile`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
         },
     });
@@ -147,14 +143,6 @@ export const getUserProfile = async () => {
  * @returns {Promise<Object>} Updated user profile data
  */
 export const updateUserProfile = async (profileData: { name?: string; email?: string; password?: string; profileImage?: string | null }) => {
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-        throw new Error('No authentication token found');
-    }
-
-
-
     try {
         // Ensure profileImage is properly set to null if we're removing it
         const dataToSend = { ...profileData };
@@ -167,8 +155,8 @@ export const updateUserProfile = async (profileData: { name?: string; email?: st
         // Standard approach for all updates including image removal
         const response = await fetch(`${API_URL}/auth/profile`, {
             method: 'PUT',
+            credentials: 'include',
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(dataToSend),
@@ -219,6 +207,7 @@ export const updateUserProfile = async (profileData: { name?: string; email?: st
 export const requestPasswordReset = async (email: string) => {
     const response = await fetch(`${API_URL}/password/forgot`, {
         method: 'POST',
+            credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
         },
@@ -242,6 +231,7 @@ export const requestPasswordReset = async (email: string) => {
 export const validateResetToken = async (token: string) => {
     const response = await fetch(`${API_URL}/password/reset/${token}`, {
         method: 'GET',
+            credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
         },
@@ -265,6 +255,7 @@ export const validateResetToken = async (token: string) => {
 export const resetPassword = async (token: string, password: string) => {
     const response = await fetch(`${API_URL}/password/reset/${token}`, {
         method: 'POST',
+            credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
         },
@@ -286,17 +277,11 @@ export const resetPassword = async (token: string, password: string) => {
  * @returns {Promise<Object>} Updated user data
  */
 export const updateUserTier = async (tier: 'free' | 'lite' | 'pro') => {
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-        throw new Error('No authentication token found');
-    }
-
     try {
         const response = await fetch(`${API_URL}/auth/tier`, {
             method: 'PUT',
+            credentials: 'include',
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ tier }),
@@ -326,9 +311,22 @@ export const updateUserTier = async (tier: 'free' | 'lite' | 'pro') => {
 // Tier upgrades must go through the Razorpay payment verification flow.
 
 /**
- * Logout user - clears local storage
+ * Logout user - calls backend to clear cookie and clears local storage
  */
-export const logoutUser = () => {
+export const logoutUser = async () => {
+    try {
+        await fetch(`${API_URL}/auth/logout`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+    } catch (error) {
+        console.error('Failed to logout from server:', error);
+    }
+    
+    // Always clear frontend state regardless of server success
     localStorage.removeItem('token');
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userEmail');
@@ -346,7 +344,6 @@ export const logoutUser = () => {
  */
 export const isAuthenticated = () => {
     const isAuthInStorage = localStorage.getItem('isAuthenticated') === 'true';
-    const hasToken = !!localStorage.getItem('token');
 
     // Also check if the account has been deleted
     try {
@@ -362,7 +359,8 @@ export const isAuthenticated = () => {
         console.error('Error checking deleted accounts in isAuthenticated:', error);
     }
 
-    return isAuthInStorage && hasToken;
+    // Token is now in HttpOnly cookie (not accessible via JS), so we only check the auth flag
+    return isAuthInStorage;
 };
 
 /**
@@ -376,14 +374,14 @@ export const isAuthenticated = () => {
  * This also auto-expires stale subscriptions server-side.
  */
 export const synchronizeTier = async (): Promise<string> => {
-    const token = localStorage.getItem('token');
-    if (!token) return 'free';
+    // Check auth flag instead of token (token is in HttpOnly cookie)
+    if (localStorage.getItem('isAuthenticated') !== 'true') return 'free';
 
     try {
         const response = await fetch(`${API_URL}/payment/subscription-status`, {
             method: 'GET',
+            credentials: 'include',
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
         });
@@ -424,14 +422,6 @@ export const synchronizeTier = async (): Promise<string> => {
  * @returns {Promise<Object>} Updated user data
  */
 export const updateProfileImage = async (imageDataUrl: string) => {
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-        throw new Error('No authentication token found');
-    }
-
-
-
     // Only compress further if absolutely necessary
     if (imageDataUrl.length > 80 * 1024) {
 
@@ -472,8 +462,8 @@ export const updateProfileImage = async (imageDataUrl: string) => {
         // Try to prevent any unnecessary data in the request
         const response = await fetch(`${API_URL}/auth/profile`, {
             method: 'PUT',
+            credentials: 'include',
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -502,18 +492,13 @@ export const updateProfileImage = async (imageDataUrl: string) => {
  * @returns {Promise<Object>} Response message
  */
 export const deleteUserAccount = async (password: string) => {
-    const token = localStorage.getItem('token');
     const userEmail = localStorage.getItem('userEmail');
-
-    if (!token) {
-        throw new Error('No authentication token found');
-    }
 
     try {
         const response = await fetch(`${API_URL}/auth/account`, {
             method: 'DELETE',
+            credentials: 'include',
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ password }),
@@ -621,10 +606,6 @@ export const initiatePayment = async (amount: number, duration: string, plan: st
         throw new Error('Failed to load Razorpay script');
     }
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-        throw new Error('No authentication token found');
-    }
     let isDuration: number = 0;
     if (!duration) {
         isDuration = 1; // Default to 1 month if duration is not provided
@@ -649,8 +630,8 @@ export const initiatePayment = async (amount: number, duration: string, plan: st
         }
         const response = await fetch(`${API_URL}/payment/create-order`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(OrderItem),
@@ -675,15 +656,12 @@ export const initiatePayment = async (amount: number, duration: string, plan: st
             key: import.meta.env.VITE_RAZORPAY_KEY, // Your Razorpay key
             name: 'MediBridge',
             handler: async (response: any) => {
-                // Fetch the absolute newest token right before verifying to avoid closure staleness
-                const currentToken = localStorage.getItem('token');
-
                 // Handle successful payment
                 try {
                     const paymentResponse = await fetch(`${API_URL}/payment/verify-payment`, {
                         method: 'POST',
+            credentials: 'include',
                         headers: {
-                            'Authorization': `Bearer ${currentToken}`,
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
@@ -775,18 +753,11 @@ export const initiatePayment = async (amount: number, duration: string, plan: st
  * @returns {Promise<Object>} Response message
  */
 export const cancelSubscription = async (password: string, reasons: string[]) => {
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-
-        throw new Error('No authentication token found');
-    }
-
     try {
         const response = await fetch(`${API_URL}/payment/cancel-subscription`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ password: password, reasons: reasons }),
@@ -836,17 +807,16 @@ export const cancelSubscription = async (password: string, reasons: string[]) =>
  * @returns {Promise<Object>} Subscription status data
  */
 export const getSubscriptionStatus = async () => {
-    const token = localStorage.getItem('token');
-
-    if (!token) {
+    // Check auth flag instead of token (HttpOnly cookie)
+    if (localStorage.getItem('isAuthenticated') !== 'true') {
         return { success: true, tier: 'free', subscription: null };
     }
 
     try {
         const response = await fetch(`${API_URL}/payment/subscription-status`, {
             method: 'GET',
+            credentials: 'include',
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
         });
@@ -885,16 +855,10 @@ export const getSubscriptionStatus = async () => {
  * @returns {Promise<Object>} Subscription details
  */
 export const getSubscriptionDetails = async () => {
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-        throw new Error('No authentication token found');
-    }
-
     const response = await fetch(`${API_URL}/auth/subscription`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
         },
     });
@@ -916,6 +880,7 @@ export const getSubscriptionDetails = async () => {
 export const loginWithGoogle = async (credential: string) => {
     const response = await fetch(`${API_URL}/auth/google`, {
         method: 'POST',
+            credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
         },
@@ -942,16 +907,10 @@ export const startTrialOnServer = async (): Promise<{
     message?: string;
     subscription?: { plan: string; billingCycle: string; endDate: string; daysLeft: number };
 }> => {
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-        throw new Error('No authentication token found. Please log in first.');
-    }
-
     const response = await fetch(`${API_URL}/payment/start-trial`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
         },
     });
@@ -985,13 +944,10 @@ export const startTrialOnServer = async (): Promise<{
  * Create a ₹300 Razorpay appointment order (Lite users) or confirm directly (Pro users).
  */
 export const createAppointmentOrder = async (doctorId: string, appointmentDate: Date, doctorName: string) => {
-    const token = localStorage.getItem('token');
-    if (!token) throw new Error('Please log in first');
-
     const response = await fetch(`${API_URL}/payment/create-appointment-order`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ doctorId, appointmentDate: appointmentDate.toISOString(), doctorName }),
@@ -1011,13 +967,10 @@ export const verifyAppointmentPayment = async (
     razorpaySignature: string,
     appointmentId: string,
 ) => {
-    const token = localStorage.getItem('token');
-    if (!token) throw new Error('Please log in first');
-
     const response = await fetch(`${API_URL}/payment/verify-appointment-payment`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ razorpayOrderId, razorpayPaymentId, razorpaySignature, appointmentId }),

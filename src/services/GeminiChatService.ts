@@ -123,6 +123,7 @@ export const createGeminiChatSession = async (
         // Use configurable base URL
         const response = await fetch(`${API_BASE_URL}/api/send-message`, {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
           },

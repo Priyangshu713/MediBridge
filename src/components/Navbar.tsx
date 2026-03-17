@@ -263,7 +263,7 @@ const Navbar = () => {
   // Load user profile data including profile image
   useEffect(() => {
     const fetchProfileData = async () => {
-      if (!isAuthenticated || !localStorage.getItem('token')) return;
+      if (!isAuthenticated) return;
 
       setLoadingProfile(true);
       try {
@@ -349,13 +349,13 @@ const Navbar = () => {
       <div className="container mx-auto px-4 flex justify-between items-center">
         <Link
           to="/"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 shrink-0"
         >
           <img
             src="/medibridge-logo.png"
             alt="MediBridge Logo"
             className={cn(
-              "h-10 sm:h-12 w-auto object-contain animate-fade-in",
+              "h-8 sm:h-10 w-auto object-contain animate-fade-in",
               (isScrolled || (isHomePage && !isScrolled)) && "brightness-0 invert"
             )}
           />
@@ -363,7 +363,7 @@ const Navbar = () => {
             <span
               style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700 }}
               className={cn(
-                "text-lg sm:text-xl md:text-2xl tracking-tight transition-colors duration-300",
+                "text-lg sm:text-xl tracking-tight transition-colors duration-300",
                 (isScrolled || (isHomePage && !isScrolled)) ? "text-white" : "text-[#1a7a6d]"
               )}
             >
@@ -372,7 +372,7 @@ const Navbar = () => {
             <span
               style={{ fontFamily: "'Lato', sans-serif", fontWeight: 400 }}
               className={cn(
-                "text-[7px] sm:text-[8px] md:text-[9px] tracking-[0.15em] uppercase transition-colors duration-300",
+                "text-[7px] sm:text-[8px] tracking-[0.12em] uppercase transition-colors duration-300",
                 (isScrolled || (isHomePage && !isScrolled)) ? "text-white/80" : "text-[#3a9d8f]"
               )}
             >
@@ -393,7 +393,7 @@ const Navbar = () => {
                 key={item.path}
                 to={item.path}
                 className={cn(
-                  'px-3 py-2 rounded-full transition-all duration-300 ease-in-out flex items-center text-sm font-medium',
+                  'px-2 lg:px-3 py-1.5 rounded-full transition-all duration-300 ease-in-out flex items-center text-xs lg:text-sm font-medium whitespace-nowrap',
                   location.pathname === item.path
                     ? 'text-primary bg-primary/10 backdrop-blur-sm'
                     : (isHomePage && !isScrolled ? 'text-white/90 hover:text-white hover:bg-white/10' : 'hover:text-primary hover:bg-black/10')
@@ -486,38 +486,25 @@ const Navbar = () => {
         <button
           type="button"
           className={cn(
-            "md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-full transition-all duration-300 focus:outline-none",
+            "md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-full transition-colors duration-300 focus:outline-none relative overflow-hidden",
             (isHomePage && !isScrolled) ? "text-white hover:bg-white/10" : "text-foreground hover:bg-black/10"
           )}
           onClick={toggleMenu}
-          aria-label="Toggle menu"
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isMenuOpen}
           data-mobile-menu="trigger"
         >
-          <div className="relative w-5 h-5">
-            <span
-              className={cn(
-                "absolute left-0 h-0.5 bg-current rounded-full transition-all duration-300 ease-in-out",
-                isMenuOpen
-                  ? "w-5 top-2 rotate-45"
-                  : "w-5 top-0.5"
-              )}
-            />
-            <span
-              className={cn(
-                "absolute left-0 h-0.5 bg-current rounded-full transition-all duration-300 ease-in-out",
-                isMenuOpen
-                  ? "w-0 opacity-0"
-                  : "w-4 opacity-100 top-2"
-              )}
-            />
-            <span
-              className={cn(
-                "absolute left-0 h-0.5 bg-current rounded-full transition-all duration-300 ease-in-out",
-                isMenuOpen
-                  ? "w-5 top-2 -rotate-45"
-                  : "w-3 top-3.5"
-              )}
-            />
+          <div 
+            className={cn(
+              "relative w-6 h-6 flex items-center justify-center transition-transform duration-300 ease-in-out",
+              isMenuOpen ? "rotate-90 scale-110" : "rotate-0 scale-100"
+            )}
+          >
+            {isMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </div>
         </button>
       </div>
@@ -541,7 +528,7 @@ const Navbar = () => {
         {/* Mobile menu */}
         <div
           className={cn(
-            "md:hidden fixed inset-x-0 top-[var(--nav-height,56px)] bg-white dark:bg-gray-900 shadow-lg z-40 transition-all duration-500 ease-in-out",
+            "md:hidden fixed inset-x-0 top-[var(--nav-height,56px)] bg-white shadow-lg z-40 transition-all duration-500 ease-in-out border-t border-gray-100",
             isMenuOpen
               ? "translate-y-0 opacity-100 visible"
               : "translate-y-[-20px] opacity-0 invisible"

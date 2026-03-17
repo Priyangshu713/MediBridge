@@ -8,12 +8,10 @@ import {
     DialogFooter
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Clock, Sparkles, ZapIcon, CheckCircle, Info, ChevronDown, Flame, TrendingUp, ExternalLink, History, Calendar } from 'lucide-react';
+import { Clock, Sparkles, ZapIcon, CheckCircle, Info, ChevronDown, Flame, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 // Define the structure of a changelog entry
 interface ChangelogItem {
@@ -30,71 +28,38 @@ interface ChangelogItem {
     }[];
 }
 
-interface LegacyVersion {
-    version: string;
-    date: string;
-    description: string;
-    imageUrl?: string;
-    link: string;
-    era: string;
-    growth: number; // 0-100 scale for graph
-}
-
-const legacyData: LegacyVersion[] = [
-    {
-        version: "v1.0",
-        date: "March 2025",
-        description: "The beginning of MediBridge. Basic health tracking and initial AI models.",
-        link: "https://health-connect-bice.vercel.app/",
-        era: "The Foundation",
-        growth: 15
-    },
-    {
-        version: "v2.0",
-        date: "March 2025",
-        description: "Introduction of subscription tiers and comprehensive UI improvements.",
-        link: "https://health-connect-bice.vercel.app/",
-        era: "Expansion",
-        growth: 20
-    },
-    {
-        version: "v3.0",
-        date: "April 2025",
-        description: "Telemedicine integration and optimized mobile performance.",
-        link: "https://health-connect-legacy.vercel.app/",
-        era: "Connectivity",
-        growth: 45
-    },
-    {
-        version: "v4.0",
-        date: "June 2025",
-        description: "Major backend re-architecture and faster AI models.",
-        link: "https://health-connect-legacy.vercel.app/",
-        era: "Performance",
-        growth: 55
-    },
-    {
-        version: "v5.0",
-        date: "July 2025",
-        description: "ScanBar feature and modern UI refresh.",
-        link: "https://health-connect-legacy.vercel.app/",
-        era: "Innovation",
-        growth: 65
-    },
-    {
-        version: "v6.0",
-        date: "November 2025",
-        description: "Symptom Checker, Mental Wellness Journal, and Smart Insights.",
-        link: "https://healthconnectofficial.vercel.app/",
-        era: "Intelligence",
-        growth: 90
-    }
-];
-
-const reversedLegacyData = [...legacyData].reverse();
-
 // Sample changelog data - this would come from your backend in a real app
 const changelogData: ChangelogItem[] = [
+    {
+        date: 'March 18, 2026',
+        version: '6.3.0',
+        items: [
+            {
+                text: 'Completely redesigned the Changelog Dialog into a modern, professional vertical timeline.',
+                type: 'feature'
+            },
+            {
+                text: 'Introduced smart "Refresh to Update" notifications to ensure you always have the latest improvements.',
+                type: 'feature'
+            },
+            {
+                text: 'Enhanced Data Security: Migrated to secure HttpOnly Cookie-based authentication to protect your sessions.',
+                type: 'feature'
+            },
+            {
+                text: 'Cloud Sync & Persistence: Your Health Analysis (Basic/Advanced) and Wellness Journal are now securely stored on our servers for cross-device access.',
+                type: 'feature'
+            },
+            {
+                text: 'Fixed Navigation Bar layout issues on desktop and improved readability on mobile devices.',
+                type: 'bugfix'
+            },
+            {
+                text: 'Resolved the "ghosting" animation glitch with the mobile hamburger menu icon.',
+                type: 'bugfix'
+            }
+        ]
+    },
     {
         date: 'March 11, 2026',
         version: '6.2.0',
@@ -383,12 +348,11 @@ interface ChangelogDialogProps {
 }
 
 const ChangelogDialog: React.FC<ChangelogDialogProps> = ({ isOpen, onClose }) => {
-    // State to track which sections are expanded (by default, all are expanded)
+    // State to track which sections are expanded (by default, first two are expanded)
     const [expandedSections, setExpandedSections] = useState<Record<number, boolean>>(() => {
-        // Initialize with first section expanded, others collapsed
         const initialState: Record<number, boolean> = {};
         changelogData.forEach((_, index) => {
-            initialState[index] = index === 0; // Only first section is expanded by default
+            initialState[index] = index < 2; // First two sections expanded by default
         });
         return initialState;
     });
@@ -401,207 +365,173 @@ const ChangelogDialog: React.FC<ChangelogDialogProps> = ({ isOpen, onClose }) =>
         }));
     };
 
-    // Function to get the appropriate icon for each type of update
-    const getItemIcon = (type?: string) => {
+    // Function to get the appropriate icon and colors for each type of update
+    const getTypeConfig = (type?: string) => {
         switch (type) {
             case 'feature':
-                return <Sparkles className="h-4 w-4 text-primary" />;
+                return {
+                    icon: <Sparkles className="h-3.5 w-3.5" />,
+                    colorClass: "bg-primary/10 text-primary border-primary/20",
+                    badgeText: "Feature"
+                };
             case 'improvement':
-                return <ZapIcon className="h-4 w-4 text-indigo-500" />;
+                return {
+                    icon: <ZapIcon className="h-3.5 w-3.5" />,
+                    colorClass: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20",
+                    badgeText: "Improvement"
+                };
             case 'bugfix':
-                return <CheckCircle className="h-4 w-4 text-green-500" />;
+                return {
+                    icon: <CheckCircle className="h-3.5 w-3.5" />,
+                    colorClass: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+                    badgeText: "Fix"
+                };
             case 'announcement':
-                return <Info className="h-4 w-4 text-amber-500" />;
+                return {
+                    icon: <Info className="h-3.5 w-3.5" />,
+                    colorClass: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+                    badgeText: "Notice"
+                };
             default:
-                return <Sparkles className="h-4 w-4 text-primary" />;
-        }
-    };
-
-    // Function to get the badge text for update type
-    const getBadgeText = (type?: string) => {
-        switch (type) {
-            case 'feature':
-                return <Badge variant="default" className="bg-primary hover:bg-primary">New Feature</Badge>;
-            case 'improvement':
-                return <Badge variant="outline" className="text-indigo-500 border-indigo-500">Improvement</Badge>;
-            case 'bugfix':
-                return <Badge variant="outline" className="text-green-500 border-green-500">Bug Fix</Badge>;
-            case 'announcement':
-                return <Badge variant="outline" className="text-amber-500 border-amber-500">Announcement</Badge>;
-            default:
-                return <Badge variant="secondary">Update</Badge>;
+                return {
+                    icon: <Sparkles className="h-3.5 w-3.5" />,
+                    colorClass: "bg-primary/10 text-primary border-primary/20",
+                    badgeText: "Update"
+                };
         }
     };
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-2xl">
-                <DialogHeader>
-                    <div className="flex items-center gap-2">
-                        <Sparkles className="h-5 w-5 text-primary" />
-                        <DialogTitle className="text-xl">What's New in MediBridge</DialogTitle>
-                    </div>
-                    <DialogDescription>
-                        See the latest updates, improvements, and features we've added to make your health journey better.
-                    </DialogDescription>
-                </DialogHeader>
-
-                <Tabs defaultValue="updates" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-4">
-                        <TabsTrigger value="updates">Updates</TabsTrigger>
-                        <TabsTrigger value="legacy">Legacy Archives</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="updates" className="space-y-6 py-2">
-                        {changelogData.map((release, idx) => (
-                            <div key={idx} className="overflow-hidden">
-                                <div
-                                    className="flex items-center gap-2 cursor-pointer"
-                                    onClick={() => toggleSection(idx)}
-                                >
-                                    <Clock className="h-4 w-4 text-muted-foreground" />
-                                    <h3 className="text-lg font-medium">{release.date}</h3>
-                                    <Badge variant="secondary" className="ml-2">v{release.version}</Badge>
-                                    {idx === 0 && (
-                                        <Badge variant="default" className="ml-2 flex items-center gap-1 bg-green-500 hover:bg-green-600">
-                                            <TrendingUp className="h-3 w-3" /> LATEST
-                                        </Badge>
-                                    )}
-                                    {release.isMajor && idx !== 0 && (
-                                        <Badge variant="destructive" className="ml-2 flex items-center gap-1">
-                                            <Flame className="h-3 w-3 fill-current" /> HOT
-                                        </Badge>
-                                    )}
-                                    <div className="ml-auto">
-                                        <motion.div
-                                            animate={{ rotate: expandedSections[idx] ? 180 : 0 }}
-                                            transition={{ duration: 0.2 }}
-                                        >
-                                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                                        </motion.div>
-                                    </div>
-                                </div>
-
-                                <AnimatePresence>
-                                    {expandedSections[idx] && (
-                                        <motion.div
-                                            initial={{ height: 0, opacity: 0 }}
-                                            animate={{ height: 'auto', opacity: 1 }}
-                                            exit={{ height: 0, opacity: 0 }}
-                                            transition={{ duration: 0.2 }}
-                                            className="overflow-hidden"
-                                        >
-                                            <div className="space-y-3 ml-6 mt-4 mb-2">
-                                                {release.items.map((item, itemIdx) => (
-                                                    <div key={itemIdx} className="flex items-start gap-3">
-                                                        {getItemIcon(item.type)}
-                                                        <div className="space-y-1">
-                                                            <span className="text-sm">{item.text}</span>
-                                                            <div className="flex mt-1">
-                                                                {getBadgeText(item.type)}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-
-                                {idx < changelogData.length - 1 && (
-                                    <Separator className="my-4" />
-                                )}
+            <DialogContent className="sm:max-w-2xl max-h-[85vh] p-0 overflow-hidden rounded-2xl sm:rounded-3xl border border-white/20 dark:border-white/10 shadow-2xl bg-white dark:bg-slate-950 flex flex-col">
+                
+                {/* Modern Header */}
+                <div className="relative pt-8 pb-6 px-6 sm:px-8 border-b border-border/50 bg-slate-50/50 dark:bg-slate-900/50">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+                    <DialogHeader>
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 bg-primary/10 rounded-xl">
+                                <Sparkles className="h-6 w-6 text-primary" />
                             </div>
-                        ))}
-                    </TabsContent>
-
-                    <TabsContent value="legacy" className="py-2">
-                        <div className="mb-6 bg-primary/5 p-4 rounded-xl border border-primary/10">
-                            <h3 className="font-semibold flex items-center gap-2 mb-4">
-                                <TrendingUp className="h-4 w-4 text-primary" />
-                                Our Growth Journey
-                            </h3>
-
-                            {/* Growth Graph */}
-                            <div className="h-[160px] w-full mb-4">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={legacyData}>
-                                        <defs>
-                                            <linearGradient id="colorGrowth" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                                                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground))" opacity={0.1} />
-                                        <XAxis
-                                            dataKey="version"
-                                            axisLine={false}
-                                            tickLine={false}
-                                            tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-                                            interval="preserveStartEnd"
-                                        />
-                                        <Tooltip
-                                            contentStyle={{
-                                                backgroundColor: 'hsl(var(--background))',
-                                                borderColor: 'hsl(var(--border))',
-                                                borderRadius: '8px',
-                                                fontSize: '12px'
-                                            }}
-                                            itemStyle={{ color: 'hsl(var(--primary))' }}
-                                            cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '4 4' }}
-                                        />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="growth"
-                                            stroke="hsl(var(--primary))"
-                                            strokeWidth={2}
-                                            fillOpacity={1}
-                                            fill="url(#colorGrowth)"
-                                        />
-                                    </AreaChart>
-                                </ResponsiveContainer>
-                            </div>
-
-                            <p className="text-sm text-muted-foreground">
-                                From a simple health tracker to a comprehensive AI-powered wellness platform. Explore our evolution over time.
-                            </p>
+                            <DialogTitle className="text-2xl sm:text-3xl font-bold tracking-tight">
+                                Platform Changelogs
+                            </DialogTitle>
                         </div>
+                        <DialogDescription className="text-base text-muted-foreground w-11/12">
+                            Discover the latest features, improvements, and fixes we've pushed to elevate your health journey.
+                        </DialogDescription>
+                    </DialogHeader>
+                </div>
 
-                        <div className="relative pl-4 border-l-2 border-muted space-y-8 ml-2">
-                            {reversedLegacyData.map((version, idx) => (
-                                <div key={idx} className="relative">
-                                    {/* Timeline dot */}
-                                    <div className="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-primary border-2 border-background ring-2 ring-primary/20"></div>
+                {/* Vertical Timeline Body */}
+                <div className="overflow-y-auto px-6 sm:px-8 py-6 flex-1 bg-gradient-to-b from-transparent to-slate-50/30 dark:to-slate-900/10">
+                    <div className="relative">
+                        {/* Timeline Track */}
+                        <div className="absolute top-4 left-[15px] sm:left-[23px] bottom-4 w-px bg-gradient-to-b from-primary/30 via-border to-transparent" />
 
-                                    <div className="flex flex-col gap-2">
-                                        <div className="flex items-center gap-2">
-                                            <Badge variant="outline" className="font-mono">{version.version}</Badge>
-                                            <span className="text-sm text-muted-foreground flex items-center gap-1">
-                                                <Calendar className="h-3 w-3" />
-                                                {version.date}
-                                            </span>
-                                        </div>
-
-                                        <h4 className="font-semibold text-base">{version.era}</h4>
-                                        <p className="text-sm text-muted-foreground">{version.description}</p>
-
-                                        <Button variant="outline" size="sm" className="w-fit mt-1 h-8" asChild>
-                                            <a href={version.link} target="_blank" rel="noopener noreferrer">
-                                                <History className="mr-2 h-3 w-3" />
-                                                Visit Archive
-                                                <ExternalLink className="ml-2 h-3 w-3 opacity-50" />
-                                            </a>
-                                        </Button>
+                        <div className="space-y-8 pb-6">
+                            {changelogData.map((release, idx) => (
+                                <div key={idx} className="relative pl-10 sm:pl-14">
+                                    {/* Timeline Node */}
+                                    <div className={`absolute left-0 sm:left-2 top-2 h-8 w-8 rounded-full border-4 border-white dark:border-slate-950 flex items-center justify-center z-10 
+                                        ${idx === 0 ? 'bg-primary text-white shadow-md shadow-primary/20 scale-110' : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground'}
+                                    `}>
+                                        {idx === 0 ? <TrendingUp className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
                                     </div>
+
+                                    {/* Release Header */}
+                                    <div 
+                                        className="group cursor-pointer select-none"
+                                        onClick={() => toggleSection(idx)}
+                                    >
+                                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1">
+                                            <h3 className={`text-xl sm:text-2xl font-bold tracking-tight transition-colors ${idx === 0 ? 'text-primary' : 'text-foreground group-hover:text-primary/80'}`}>
+                                                v{release.version}
+                                            </h3>
+                                            
+                                            {/* Badges Container */}
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <Badge variant="secondary" className="font-mono text-xs text-muted-foreground bg-slate-100 dark:bg-slate-800">
+                                                    {release.date}
+                                                </Badge>
+                                                
+                                                {idx === 0 && (
+                                                    <span className="inline-flex animate-pulse items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                                                        Latest
+                                                    </span>
+                                                )}
+                                                
+                                                {release.isMajor && idx !== 0 && (
+                                                    <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+                                                        <Flame className="h-3 w-3" /> HOT
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <div className="ml-auto">
+                                                <motion.div
+                                                    animate={{ rotate: expandedSections[idx] ? 180 : 0 }}
+                                                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                                                    className="p-1 rounded-full bg-slate-100 dark:bg-slate-800 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors"
+                                                >
+                                                    <ChevronDown className="h-4 w-4" />
+                                                </motion.div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Expandable Content */}
+                                    <AnimatePresence initial={false}>
+                                        {expandedSections[idx] && (
+                                            <motion.div
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: 'auto', opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
+                                            >
+                                                <div className="pt-4 pb-2 space-y-3">
+                                                    {release.items.map((item, itemIdx) => {
+                                                        const config = getTypeConfig(item.type);
+                                                        return (
+                                                            <div 
+                                                                key={itemIdx} 
+                                                                className="group/item flex items-start gap-3 p-3 sm:p-4 rounded-xl border border-transparent hover:border-border/50 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-all duration-200"
+                                                            >
+                                                                <div className={`mt-0.5 flex items-center justify-center p-1.5 rounded-md border ${config.colorClass} shrink-0`}>
+                                                                    {config.icon}
+                                                                </div>
+                                                                <div className="space-y-1.5 flex-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className={`text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-sm ${config.colorClass}`}>
+                                                                            {config.badgeText}
+                                                                        </span>
+                                                                    </div>
+                                                                    <p className="text-sm sm:text-base text-foreground/90 leading-relaxed font-medium">
+                                                                        {item.text}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
                             ))}
                         </div>
-                    </TabsContent>
-                </Tabs>
+                    </div>
+                </div>
 
-                <DialogFooter className="pt-2">
-                    <Button onClick={onClose} className="w-full sm:w-auto">Close</Button>
-                </DialogFooter>
+                {/* Footer */}
+                <div className="p-4 px-6 border-t border-border/50 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-sm flex justify-end">
+                    <Button 
+                        onClick={onClose} 
+                        className="rounded-full px-6 transition-transform hover:scale-105"
+                    >
+                        Got it, thanks!
+                    </Button>
+                </div>
             </DialogContent>
         </Dialog>
     );

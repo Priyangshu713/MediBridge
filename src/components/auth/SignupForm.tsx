@@ -143,7 +143,7 @@ const SignupForm = () => {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userEmail', email);
       localStorage.setItem('userName', name);
-      localStorage.setItem('token', result.token);
+      // Token is now set securely via HttpOnly cookie by the backend
 
       // Store tier information (defaults to 'free' for new users)
       if (result.tier) {
@@ -198,7 +198,7 @@ const SignupForm = () => {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userEmail', result.email);
       localStorage.setItem('userName', result.name);
-      localStorage.setItem('token', result.token);
+      // Token is now set securely via HttpOnly cookie by the backend
 
       if (result.tier) {
         localStorage.setItem('geminiTier', result.tier);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Lock, Shield, ArrowLeft, Database } from 'lucide-react';
+import { Heart, Lock, Shield, ArrowLeft, Database, Cookie } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -18,6 +18,8 @@ const TermsAndPrivacyPage = () => {
             setActiveTab('privacy');
         } else if (tabParam === 'data') {
             setActiveTab('data');
+        } else if (tabParam === 'cookies') {
+            setActiveTab('cookies');
         }
     }, [location]);
 
@@ -65,10 +67,11 @@ const TermsAndPrivacyPage = () => {
 
             <motion.div variants={itemVariants} className="bg-white/95 backdrop-blur-sm rounded-lg border shadow-md p-6 mb-12">
                 <Tabs defaultValue="terms" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-1 h-auto md:grid-cols-3 mb-6 gap-2">
-                        <TabsTrigger value="terms" className="text-sm md:text-lg py-2">Terms of Service</TabsTrigger>
-                        <TabsTrigger value="privacy" className="text-sm md:text-lg py-2">Privacy Policy</TabsTrigger>
-                        <TabsTrigger value="data" className="text-sm md:text-lg py-2">Data Processing</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-1 h-auto md:grid-cols-4 mb-6 gap-2">
+                        <TabsTrigger value="terms" className="text-xs sm:text-sm md:text-base lg:text-lg py-2">Terms of Service</TabsTrigger>
+                        <TabsTrigger value="privacy" className="text-xs sm:text-sm md:text-base lg:text-lg py-2">Privacy Policy</TabsTrigger>
+                        <TabsTrigger value="data" className="text-xs sm:text-sm md:text-base lg:text-lg py-2">Data Processing</TabsTrigger>
+                        <TabsTrigger value="cookies" className="text-xs sm:text-sm md:text-base lg:text-lg py-2">Cookie Policy</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="terms" className="space-y-6">
@@ -99,8 +102,8 @@ const TermsAndPrivacyPage = () => {
                                 </section>
 
                                 <section>
-                                    <h3 className="font-medium text-foreground mb-2">4. Local Data Storage</h3>
-                                    <p>MediBridge is designed to store your health data locally on your device. We do not store your health information on our servers. You are responsible for backing up your data.</p>
+                                    <h3 className="font-medium text-foreground mb-2">4. Secure Cloud Storage</h3>
+                                    <p>MediBridge is designed to store your health data securely on our servers. This enables seamless cross-device synchronization and ensures your data is protected and backed up. We use industry-standard encryption to safeguard your information.</p>
                                 </section>
 
                                 <section>
@@ -150,7 +153,7 @@ const TermsAndPrivacyPage = () => {
                             <div className="space-y-4 text-muted-foreground">
                                 <section>
                                     <h3 className="font-medium text-foreground mb-2">1. Data Collection</h3>
-                                    <p>MediBridge is committed to protecting your privacy. We only collect and store your login information (email and password) on our servers. <strong>All health data, history, and personal metrics are stored exclusively on your local device.</strong></p>
+                                    <p>MediBridge is committed to protecting your privacy. We collect and store your account information and health data securely on our servers to provide you with a consistent experience across all your devices.</p>
                                 </section>
 
                                 <section>
@@ -165,7 +168,7 @@ const TermsAndPrivacyPage = () => {
                                 </section>
 
                                 <section>
-                                    <h3 className="font-medium text-foreground mb-2">3. Local Data Storage</h3>
+                                    <h3 className="font-medium text-foreground mb-2">3. Secure Data Storage</h3>
                                     <p>Your health data, including but not limited to:</p>
                                     <ul className="list-disc pl-5 space-y-1 mt-2">
                                         <li>Health metrics and measurements</li>
@@ -175,7 +178,7 @@ const TermsAndPrivacyPage = () => {
                                         <li>Fitness data</li>
                                         <li>Goals and progress</li>
                                     </ul>
-                                    <p className="mt-2"><strong>These data points are stored exclusively on your device and are not transmitted to or stored on our servers.</strong></p>
+                                    <p className="mt-2"><strong>These data points are stored securely on our servers using modern encryption standards to ensure they are available to you whenever you sign in.</strong></p>
                                 </section>
 
                                 <section>
@@ -202,10 +205,10 @@ const TermsAndPrivacyPage = () => {
                                     <h3 className="font-medium text-foreground mb-2">7. Your Control</h3>
                                     <p>You can:</p>
                                     <ul className="list-disc pl-5 space-y-1 mt-2">
-                                        <li>Access and update your account information at any time</li>
-                                        <li>Delete your account and associated login information from our servers</li>
-                                        <li>Manage all your health data locally on your device</li>
-                                        <li>Export or delete your local health data at your discretion</li>
+                                        <li>Access and update your account information and health data at any time</li>
+                                        <li>Delete your account and all associated data from our servers</li>
+                                        <li>Manage your health data securely through your account dashboard</li>
+                                        <li>Export or delete your data at your discretion</li>
                                     </ul>
                                 </section>
 
@@ -244,7 +247,7 @@ const TermsAndPrivacyPage = () => {
                                     <p>We engage in the following data processing activities:</p>
                                     <ul className="list-disc pl-5 space-y-1 mt-2">
                                         <li><strong>Authentication processing:</strong> Verification of user credentials during login</li>
-                                        <li><strong>Local data storage:</strong> Facilitating the storage of health data on your device</li>
+                                        <li><strong>Health data storage:</strong> Securely storing your health metrics on our servers</li>
                                         <li><strong>Analytics processing:</strong> Anonymous usage statistics to improve our service</li>
                                         <li><strong>Account management:</strong> Processing related to account creation, maintenance, and deletion</li>
                                     </ul>
@@ -265,10 +268,10 @@ const TermsAndPrivacyPage = () => {
                                     <h3 className="font-medium text-foreground mb-2">4. Health Data Processing</h3>
                                     <p>MediBridge takes a privacy-first approach to health data:</p>
                                     <ul className="list-disc pl-5 space-y-1 mt-2">
-                                        <li>Your health metrics, history, and personal health information are processed and stored exclusively on your device</li>
-                                        <li>This data is never transmitted to our servers or accessed by our staff</li>
-                                        <li>Any AI analysis of your health data is performed locally on your device</li>
-                                        <li>You maintain complete control over the processing of your health data</li>
+                                        <li>Your health metrics and history are processed and stored securely on our encrypted servers</li>
+                                        <li>Data is transmitted using secure, encrypted protocols (SSL/TLS)</li>
+                                        <li>AI analysis helps provide personalized insights while maintaining strict privacy standards</li>
+                                        <li>You maintain complete control over your data through your account settings</li>
                                     </ul>
                                 </section>
 
@@ -289,7 +292,7 @@ const TermsAndPrivacyPage = () => {
                                     <ul className="list-disc pl-5 space-y-1 mt-2">
                                         <li><strong>Account information:</strong> Retained until you delete your account</li>
                                         <li><strong>Usage logs:</strong> Retained for 90 days</li>
-                                        <li><strong>Health data:</strong> Stored locally on your device and retained according to your preferences</li>
+                                        <li><strong>Health data:</strong> Retained securely on our servers until you choose to delete it</li>
                                     </ul>
                                 </section>
 
@@ -332,6 +335,68 @@ const TermsAndPrivacyPage = () => {
                                 <section>
                                     <h3 className="font-medium text-foreground mb-2">10. Updates to Data Processing Practices</h3>
                                     <p>We may update our data processing practices from time to time. We will notify you of any significant changes through our website or via email.</p>
+                                </section>
+                            </div>
+                        </motion.div>
+                    </TabsContent>
+                    <TabsContent value="cookies" className="space-y-6">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
+                                <Cookie className="h-5 w-5 text-primary" />
+                                Cookie Policy
+                            </h2>
+
+                            <div className="space-y-4 text-muted-foreground">
+                                <section>
+                                    <h3 className="font-medium text-foreground mb-2">1. What Are Cookies</h3>
+                                    <p>Cookies are small text files that are stored on your computer or mobile device when you visit a website. They allow the website to recognize your device and remember if you have been to the website before.</p>
+                                </section>
+
+                                <section>
+                                    <h3 className="font-medium text-foreground mb-2">2. How We Use Cookies</h3>
+                                    <p>MediBridge uses cookies primarily to ensure the security of your account and to understand how our platform is used. We do not use tracking cookies for advertising purposes.</p>
+                                </section>
+
+                                <section>
+                                    <h3 className="font-medium text-foreground mb-2">3. Strictly Necessary Cookies (Always On)</h3>
+                                    <p>These cookies are essential for the operation of MediBridge. Without these cookies, the services you have asked for, like secure login and protecting your session, cannot be provided.</p>
+                                    <ul className="list-disc pl-5 space-y-1 mt-2">
+                                        <li><strong>Authentication Cookies (HttpOnly):</strong> Used to securely maintain your logged-in state. These are protected against unauthorized access and malicious scripting.</li>
+                                        <li><strong>Session Management:</strong> Ensure your requests to the server are recognized as coming from you.</li>
+                                    </ul>
+                                </section>
+
+                                <section>
+                                    <h3 className="font-medium text-foreground mb-2">4. Analytics Cookies (Optional)</h3>
+                                    <p>These cookies allow us to recognize and count the number of visitors and see how visitors move around our platform when they are using it. This helps us improve the way our website works.</p>
+                                    <ul className="list-disc pl-5 space-y-1 mt-2">
+                                        <li><strong>Performance Tracking:</strong> Identifying which pages are most frequently visited.</li>
+                                        <li><strong>Error Monitoring:</strong> Helping us detect and resolve app crashes or broken links.</li>
+                                    </ul>
+                                </section>
+
+                                <section>
+                                    <h3 className="font-medium text-foreground mb-2">5. Third-Party Cookies</h3>
+                                    <p>We only use trusted third-party services that may place cookies on your device:</p>
+                                    <ul className="list-disc pl-5 space-y-1 mt-2">
+                                        <li><strong>Vercel Analytics:</strong> Used strictly for performance and error monitoring.</li>
+                                        <li><strong>Google OAuth:</strong> Used only if you choose to sign in via Google.</li>
+                                    </ul>
+                                </section>
+
+                                <section>
+                                    <h3 className="font-medium text-foreground mb-2">6. Managing Your Cookie Preferences</h3>
+                                    <p>You can manage your cookie preferences at any time through our interactive Cookie Consent banner. While you cannot opt-out of Strictly Necessary cookies, you are free to disable Analytics cookies.</p>
+                                    <p className="mt-2 text-sm italic">Note: Changing your preferences via browser settings to block all cookies (including essential ones) will prevent you from logging into MediBridge securely.</p>
+                                </section>
+
+                                <section>
+                                    <h3 className="font-medium text-foreground mb-2">7. Updates to This Policy</h3>
+                                    <p>We may update this Cookie Policy to reflect changes in our practices or for other operational, legal, or regulatory reasons. We will notify you of any significant changes.</p>
                                 </section>
                             </div>
                         </motion.div>

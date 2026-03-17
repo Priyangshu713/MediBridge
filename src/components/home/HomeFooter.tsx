@@ -71,7 +71,7 @@ const HomeFooter = () => {
             <ul className="space-y-4 text-gray-600">
               <li><Link to="/terms-privacy?tab=terms" className="hover:text-health-lavender transition-colors">Terms of Service</Link></li>
               <li><Link to="/terms-privacy?tab=privacy" className="hover:text-health-lavender transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/cookie-policy" className="hover:text-health-lavender transition-colors">Cookie Policy</Link></li>
+              <li><Link to="/terms-privacy?tab=cookies" className="hover:text-health-lavender transition-colors">Cookie Policy</Link></li>
             </ul>
           </div>
           

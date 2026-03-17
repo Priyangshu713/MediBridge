@@ -25,6 +25,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import UpdateNotification from './components/common/UpdateNotification';
 import ChangelogDemo from './components/demo/ChangelogDemo';
 import AdminPortal from './pages/AdminPortal';
+import CookieConsent from './components/common/CookieConsent';
 import './App.css';
 import { synchronizeTier, logoutUser } from '@/api/auth';
 
@@ -67,7 +68,6 @@ function App() {
   useEffect(() => {
     // Check if user is authenticated
     const isAuth = localStorage.getItem('isAuthenticated') === 'true';
-    const token = localStorage.getItem('token');
     const userEmail = localStorage.getItem('userEmail');
 
     // Check if this account has been marked as deleted
@@ -98,7 +98,7 @@ function App() {
     }
 
     // If authenticated, synchronize tier with backend immediately and periodically
-    if (isAuth && token) {
+    if (isAuth) {
       const sync = () => {
         synchronizeTier().catch(error => {
           console.error('Background tier synchronization failed:', error);
@@ -202,6 +202,7 @@ function App() {
             <Toaster />
             <div id="modal-root" ref={modalRootRef}></div>
             <UpdateNotification />
+            <CookieConsent />
           </div>
           <Analytics /> {/* Add Analytics component here */}
         </Router>
