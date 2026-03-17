@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { HealthData } from '@/store/healthStore';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000/api';
 
 export interface ServerHealthProfile {
   userId: string;
@@ -21,7 +21,7 @@ export const saveHealthProfile = async (
   appointmentCredits: number
 ): Promise<boolean> => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/api/save-health-profile`, {
+    const response = await axios.post(`${BACKEND_URL}/health-profile/save`, {
       userId,
       healthData,
       geminiTier,
@@ -42,7 +42,7 @@ export const loadHealthProfile = async (
   userId: string
 ): Promise<ServerHealthProfile | null> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/api/get-health-profile/${encodeURIComponent(userId)}`);
+    const response = await axios.get(`${BACKEND_URL}/health-profile/${encodeURIComponent(userId)}`);
     if (response.data?.success && response.data.data) {
       return response.data.data;
     }
