@@ -38,7 +38,7 @@ const SignupForm = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { setGeminiTier, setAppointmentCredits } = useHealthStore();
+  const { setGeminiTier, setAppointmentCredits, loadFromServer } = useHealthStore();
   const [accountDeleted, setAccountDeleted] = useState(false);
   const [emailToRecover, setEmailToRecover] = useState('');
   const [isRecovering, setIsRecovering] = useState(false);
@@ -163,6 +163,9 @@ const SignupForm = () => {
       // Dispatch auth event to update global state
       dispatchAuthEvent(true, email);
 
+      // Sync health profile with server (cross-device sync)
+      await loadFromServer(email);
+
       // Show success toast - special message if account was previously deleted
       toast({
         title: wasDeleted ? "Account reactivated" : "Account created successfully",
@@ -212,6 +215,9 @@ const SignupForm = () => {
       }
 
       dispatchAuthEvent(true, result.email);
+
+      // Sync health profile with server (cross-device sync)
+      await loadFromServer(result.email);
 
       toast({
         title: "Account connected successfully",

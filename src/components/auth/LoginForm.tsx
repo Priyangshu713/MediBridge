@@ -37,7 +37,7 @@ const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { setGeminiTier, setAppointmentCredits } = useHealthStore();
+  const { setGeminiTier, setAppointmentCredits, loadFromServer } = useHealthStore();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -74,6 +74,9 @@ const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 
       // Dispatch auth event for real-time UI updates
       dispatchAuthEvent(true, data.email);
+
+      // Load health profile from server (cross-device sync)
+      await loadFromServer(data.email);
 
       // Show success toast
       toast({
@@ -127,6 +130,9 @@ const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
       }
 
       dispatchAuthEvent(true, result.email);
+
+      // Load health profile from server (cross-device sync)
+      await loadFromServer(result.email);
 
       toast({
         title: "Login successful",

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { saveHealthProfile, loadHealthProfile } from '@/services/HealthProfileSyncService';
 
 export interface HealthData {
   age: number | null;
@@ -49,6 +50,8 @@ interface HealthStore {
   geminiModel: GeminiModelType;
   geminiTier: GeminiTier;
   appointmentCredits: number;
+  isSyncing: boolean;
+  lastSyncedAt: string | null;
   updateHealthData: (data: Partial<HealthData>) => void;
   calculateBMI: () => void;
   resetHealthData: () => void;
@@ -57,6 +60,8 @@ interface HealthStore {
   setGeminiTier: (tier: GeminiTier) => void;
   setAppointmentCredits: (credits: number) => void;
   setAdvancedAnalysisComplete: (analysisData: any, fullAnalysis?: AnalysisSection[]) => void;
+  syncToServer: () => void;
+  loadFromServer: (userId: string) => Promise<boolean>;
 }
 
 // Normal BMI ranges from 18.5 to 24.9
@@ -75,6 +80,10 @@ const isValidValue = (value: any): boolean => {
 // Get API key from environment variables
 const envApiKey = import.meta.env.VITE_GEMINI_API_KEY || null;
 
+// Debounce timer for server sync
+let syncDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+const SYNC_DEBOUNCE_MS = 2000; // Wait 2s after last change before syncing
+
 export const useHealthStore = create<HealthStore>()(
   persist(
     (set, get) => {
@@ -87,6 +96,39 @@ export const useHealthStore = create<HealthStore>()(
           }
         }) as EventListener);
       }, 0);
+
+      /**
+       * Debounced sync: saves the current store state to the server.
+       * Only syncs if a user is logged in (userEmail exists in localStorage).
+       */
+      const debouncedSync = () => {
+        const userId = localStorage.getItem('userEmail');
+        if (!userId) return; // Not logged in, skip sync
+
+        if (syncDebounceTimer) {
+          clearTimeout(syncDebounceTimer);
+        }
+
+        syncDebounceTimer = setTimeout(async () => {
+          const state = get();
+          set({ isSyncing: true });
+          try {
+            const success = await saveHealthProfile(
+              userId,
+              state.healthData,
+              state.geminiTier,
+              state.appointmentCredits
+            );
+            if (success) {
+              set({ lastSyncedAt: new Date().toISOString(), isSyncing: false });
+            } else {
+              set({ isSyncing: false });
+            }
+          } catch {
+            set({ isSyncing: false });
+          }
+        }, SYNC_DEBOUNCE_MS);
+      };
 
       return {
         healthData: {
@@ -104,8 +146,10 @@ export const useHealthStore = create<HealthStore>()(
         geminiModel: "gemini-3.1-flash-lite-preview",
         geminiTier: 'free',
         appointmentCredits: 0,
+        isSyncing: false,
+        lastSyncedAt: null,
 
-        updateHealthData: (data) =>
+        updateHealthData: (data) => {
           set((state) => {
             // Determine updated values while checking if they are actually filled
             const updatedAge = data.age !== undefined ? data.age : state.healthData.age;
@@ -130,7 +174,9 @@ export const useHealthStore = create<HealthStore>()(
                 completedProfile: isProfileComplete,
               },
             };
-          }),
+          });
+          debouncedSync();
+        },
 
         calculateBMI: () => {
           const { height, weight } = get().healthData;
@@ -148,10 +194,11 @@ export const useHealthStore = create<HealthStore>()(
                 bmiCategory: getBMICategory(roundedBMI),
               },
             }));
+            debouncedSync();
           }
         },
 
-        resetHealthData: () =>
+        resetHealthData: () => {
           set({
             healthData: {
               age: null,
@@ -170,7 +217,9 @@ export const useHealthStore = create<HealthStore>()(
               overallAdvancedScore: undefined,
               savedAnalysis: undefined,
             },
-          }),
+          });
+          debouncedSync();
+        },
 
         setGeminiApiKey: (key) =>
           set({
@@ -182,17 +231,17 @@ export const useHealthStore = create<HealthStore>()(
             geminiModel: model
           }),
 
-        setGeminiTier: (tier) =>
-          set({
-            geminiTier: tier
-          }),
+        setGeminiTier: (tier) => {
+          set({ geminiTier: tier });
+          debouncedSync();
+        },
 
-        setAppointmentCredits: (credits) =>
-          set({
-            appointmentCredits: credits
-          }),
+        setAppointmentCredits: (credits) => {
+          set({ appointmentCredits: credits });
+          debouncedSync();
+        },
 
-        setAdvancedAnalysisComplete: (analysisData, fullAnalysis) =>
+        setAdvancedAnalysisComplete: (analysisData, fullAnalysis) => {
           set((state) => ({
             healthData: {
               ...state.healthData,
@@ -204,11 +253,85 @@ export const useHealthStore = create<HealthStore>()(
               overallAdvancedScore: analysisData.overallScore || 70,
               savedAnalysis: fullAnalysis, // Store the complete analysis data
             },
-          })),
+          }));
+          debouncedSync();
+        },
+
+        /**
+         * Manually trigger a sync to the server (bypasses debounce).
+         */
+        syncToServer: () => {
+          const userId = localStorage.getItem('userEmail');
+          if (!userId) return;
+
+          const state = get();
+          set({ isSyncing: true });
+          saveHealthProfile(userId, state.healthData, state.geminiTier, state.appointmentCredits)
+            .then((success) => {
+              if (success) {
+                set({ lastSyncedAt: new Date().toISOString(), isSyncing: false });
+              } else {
+                set({ isSyncing: false });
+              }
+            })
+            .catch(() => set({ isSyncing: false }));
+        },
+
+        /**
+         * Load health profile from the server and merge into store.
+         * Server data wins if a profile exists. Called on login.
+         */
+        loadFromServer: async (userId: string): Promise<boolean> => {
+          try {
+            set({ isSyncing: true });
+            const serverProfile = await loadHealthProfile(userId);
+
+            if (serverProfile && serverProfile.healthData) {
+              set((state) => ({
+                healthData: {
+                  ...state.healthData,
+                  ...serverProfile.healthData,
+                },
+                geminiTier: serverProfile.geminiTier || state.geminiTier,
+                appointmentCredits: serverProfile.appointmentCredits ?? state.appointmentCredits,
+                isSyncing: false,
+                lastSyncedAt: serverProfile.updatedAt || new Date().toISOString(),
+              }));
+
+              // Also update localStorage tier so Profile page picks it up
+              if (serverProfile.geminiTier) {
+                localStorage.setItem('geminiTier', serverProfile.geminiTier);
+              }
+
+              return true;
+            } else {
+              // No server profile yet — sync current local data to server
+              set({ isSyncing: false });
+              const state = get();
+              if (state.healthData.completedProfile) {
+                // User has local data, push it to the server
+                await saveHealthProfile(userId, state.healthData, state.geminiTier, state.appointmentCredits);
+                set({ lastSyncedAt: new Date().toISOString() });
+              }
+              return false;
+            }
+          } catch {
+            set({ isSyncing: false });
+            return false;
+          }
+        },
       };
     },
     {
       name: 'health-connect-storage',
+      partialize: (state) => ({
+        healthData: state.healthData,
+        geminiApiKey: state.geminiApiKey,
+        geminiModel: state.geminiModel,
+        geminiTier: state.geminiTier,
+        appointmentCredits: state.appointmentCredits,
+        lastSyncedAt: state.lastSyncedAt,
+      }),
     }
   )
 );
