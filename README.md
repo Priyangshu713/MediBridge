@@ -89,10 +89,16 @@ npm run dev
 
 ## 🔒 License & Usage Rights
 
-**This project is proprietary software.**
+**This project is protected by a PROPRIETARY LICENSE AGREEMENT.**
 
 > ⚠️ **STRICTLY NOT FOR PUBLIC USE OR DISTRIBUTION**
 > 
-> The source code, design assets, and intellectual property contained within this repository belong exclusively to **Priyangshu Dutta**. Unauthorized use, copying, modification, merging, publishing, distribution, sublicensing, or sale of copies of this software is strictly prohibited and will result in legal action.
+> The source code, compiled binaries, design assets, and all intellectual property contained within this repository are the exclusive property of **Priyangshu Dutta** and **The Alpha Group**. 
+>
+> Unauthorized copying, modification, distribution, sublicensing, or commercial use of this software is strictly prohibited and protected by international copyright laws. Any breach of this license will result in immediate legal action.
+
+For the full legal terms, see the [`LICENSE`](./LICENSE) file.
+
+---
 
 © 2024–2026 Priyangshu Dutta. All rights reserved.

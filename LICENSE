@@ -1,15 +1,33 @@
-Copyright © 2024–2025 Priyangshu713
+# PROPRIETARY LICENSE AGREEMENT
 
-All rights reserved.
+**Software Name:** MediBridge  
+**Copyright Holder:** Priyangshu Dutta & The Alpha Group  
+**Copyright Year:** 2024 – 2026  
 
-This repository and its contents are the exclusive property of the copyright holder. You may not:
+---
 
-- Use or copy the code or content.
-- Modify, merge, publish, or distribute any part of it.
-- Sublicense or redistribute it in any form.
-- Use the code for private, commercial, educational, or non-commercial purposes.
-- Host, mirror, or replicate the repository or any derivative.
+## 1. OWNERSHIP AND INTELLECTUAL PROPERTY
+This software, including but not limited to its source code, compiled binaries, design assets, user interfaces, documentation, and underlying algorithms (collectively referred to as the "Software"), is the exclusive intellectual property of the Copyright Holder. All rights, title, and interest in and to the Software are reserved by the Copyright Holder.
 
-No license is granted. Unauthorized use is prohibited and subject to legal action.
+## 2. STRICT PROHIBITION ON USE AND DISTRIBUTION
+This Software is **NOT OPEN SOURCE**. No license, express or implied, is granted to any person or entity to:
+- **Copy**: Reproduce, replicate, or duplicate any part of the Software.
+- **Modify**: Create derivative works, alter, or adapt the Software in any manner.
+- **Distribute**: Publish, share, host, mirror, or redistribute the Software to any third party or public forum (including but not limited to GitHub, GitLab, Bitbucket, or private servers).
+- **Sublicense**: Grant any third party the right to use or access the Software.
+- **Commercialize**: Sell, rent, lease, or use the Software for any profit-generating purpose.
 
-For inquiries about licensing or permissions, contact the owner directly via GitHub or associated contact methods.
+## 3. CONFIDENTIALITY
+The Software contains trade secrets and confidential information belonging to the Copyright Holder. Any unauthorized access to or disclosure of the source code is a breach of this agreement and subject to severe legal penalties.
+
+## 4. NO WARRANTY
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+## 5. LEGAL ACTION
+Unauthorized use, modification, or distribution of this Software is a violation of international copyright laws and treaties. The Copyright Holder reserves the right to pursue all available legal remedies, including but not limited to injunctive relief and monetary damages, against any individual or entity in violation of this License.
+
+---
+
+**For inquiries regarding official licensing or permissions, please contact the Copyright Holder directly.**
+
+Copyright © 2024 – 2026 Priyangshu Dutta. All rights reserved.
