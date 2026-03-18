@@ -39,8 +39,9 @@ export const fetchRecommendationsFromGemini = async (
       bloodGlucose: healthData.bloodGlucose || 100,
     }, {
       headers: {
-        'Content-Type': 'application/json',
-      },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
       signal: controller.signal,
     });
 

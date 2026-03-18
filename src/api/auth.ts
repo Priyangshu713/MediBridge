@@ -40,6 +40,7 @@ export const registerUser = async (userData: { name: string; email: string; pass
             credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
         },
         body: JSON.stringify(userData),
     });
@@ -81,8 +82,9 @@ export const loginUser = async (credentials: { email: string; password: string }
             method: 'POST',
             credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',
-            },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
             body: JSON.stringify(credentials),
         });
 
@@ -125,6 +127,7 @@ export const getUserProfile = async () => {
         credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
         },
     });
 
@@ -157,8 +160,9 @@ export const updateUserProfile = async (profileData: { name?: string; email?: st
             method: 'PUT',
             credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',
-            },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
             body: JSON.stringify(dataToSend),
         });
 
@@ -210,6 +214,7 @@ export const requestPasswordReset = async (email: string) => {
             credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
         },
         body: JSON.stringify({ email }),
     });
@@ -234,6 +239,7 @@ export const validateResetToken = async (token: string) => {
             credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
         },
     });
 
@@ -258,6 +264,7 @@ export const resetPassword = async (token: string, password: string) => {
             credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
         },
         body: JSON.stringify({ password }),
     });
@@ -282,8 +289,9 @@ export const updateUserTier = async (tier: 'free' | 'lite' | 'pro') => {
             method: 'PUT',
             credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',
-            },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
             body: JSON.stringify({ tier }),
         });
 
@@ -319,8 +327,9 @@ export const logoutUser = async () => {
             method: 'POST',
             credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',
-            },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
         });
     } catch (error) {
         console.error('Failed to logout from server:', error);
@@ -382,8 +391,9 @@ export const synchronizeTier = async (): Promise<string> => {
             method: 'GET',
             credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',
-            },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
         });
 
         if (!response.ok) {
@@ -464,8 +474,9 @@ export const updateProfileImage = async (imageDataUrl: string) => {
             method: 'PUT',
             credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',
-            },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
             body: JSON.stringify({
                 profileImage: imageDataUrl
             }),
@@ -499,8 +510,9 @@ export const deleteUserAccount = async (password: string) => {
             method: 'DELETE',
             credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',
-            },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
             body: JSON.stringify({ password }),
         });
 
@@ -632,8 +644,9 @@ export const initiatePayment = async (amount: number, duration: string, plan: st
             method: 'POST',
             credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',
-            },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
             body: JSON.stringify(OrderItem),
         });
 
@@ -662,8 +675,9 @@ export const initiatePayment = async (amount: number, duration: string, plan: st
                         method: 'POST',
             credentials: 'include',
                         headers: {
-                            'Content-Type': 'application/json',
-                        },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
                         body: JSON.stringify({
                             razorpay_subscription_id: response.razorpay_subscription_id,
                             razorpay_order_id: response.razorpay_order_id,
@@ -758,8 +772,9 @@ export const cancelSubscription = async (password: string, reasons: string[]) =>
             method: 'POST',
             credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',
-            },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
             body: JSON.stringify({ password: password, reasons: reasons }),
         });
 
@@ -817,8 +832,9 @@ export const getSubscriptionStatus = async () => {
             method: 'GET',
             credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',
-            },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
         });
 
         if (!response.ok) {
@@ -860,6 +876,7 @@ export const getSubscriptionDetails = async () => {
         credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
         },
     });
 
@@ -883,6 +900,7 @@ export const loginWithGoogle = async (credential: string) => {
             credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
         },
         body: JSON.stringify({ credential }),
     });
@@ -912,6 +930,7 @@ export const startTrialOnServer = async (): Promise<{
         credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
         },
     });
 
@@ -949,6 +968,7 @@ export const createAppointmentOrder = async (doctorId: string, appointmentDate: 
         credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
         },
         body: JSON.stringify({ doctorId, appointmentDate: appointmentDate.toISOString(), doctorName }),
     });
@@ -972,6 +992,7 @@ export const verifyAppointmentPayment = async (
         credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
         },
         body: JSON.stringify({ razorpayOrderId, razorpayPaymentId, razorpaySignature, appointmentId }),
     });

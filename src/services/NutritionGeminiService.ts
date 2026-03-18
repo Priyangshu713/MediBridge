@@ -78,8 +78,9 @@ export const analyzeNutrition = async (
       foodList: foodList,
     }, {
       headers: {
-        'Content-Type': 'application/json',
-      },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
       signal: controller.signal,
     })
     const text = response.data.data;
@@ -164,8 +165,9 @@ export const fetchNutritionPlanFromGemini = async (
       bloodGlucose: healthData.bloodGlucose || 100,
     }, {
       headers: {
-        'Content-Type': 'application/json',
-      },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
       signal: controller.signal,
     })
     const text = response.data.data;
@@ -207,8 +209,9 @@ export const fetchRecipeFromGemini = async (
       mealIdea: mealIdea,
     }, {
       headers: {
-        'Content-Type': 'application/json',
-      },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
       signal: controller.signal,
     })
     const text = response.data.data;
@@ -247,8 +250,9 @@ export const getFoodNutritionInfoFromGemini = async (
       foodName: foodName,
     }, {
       headers: {
-        'Content-Type': 'application/json',
-      },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
       signal: controller.signal,
     })
     const text = response.data.data;
@@ -293,8 +297,9 @@ export const generateMealFromIngredients = async (
       restrictions: restrictions,
     }, {
       headers: {
-        'Content-Type': 'application/json',
-      },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
       signal: controller.signal,
     })
     const text = response.data.data;

@@ -94,6 +94,7 @@ export const createGeminiChatSession = async (
           {
             headers: {
               'Content-Type': 'application/json',
+              ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
             },
             signal: controller.signal,
           }
@@ -125,8 +126,9 @@ export const createGeminiChatSession = async (
           method: 'POST',
           credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-          },
+              'Content-Type': 'application/json',
+              ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+            },
           body: JSON.stringify({
             sessionId: chatSession,
             // Prepend the medical-only guard so the AI never answers off-topic questions

@@ -60,6 +60,9 @@ const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userEmail', data.email);
       localStorage.setItem('userName', result.name);
+      if (result.token) {
+        localStorage.setItem('token', result.token);
+      }
       // Token is now set securely via HttpOnly cookie by the backend
 
       // Store tier information if available
@@ -116,6 +119,9 @@ const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userEmail', result.email);
       localStorage.setItem('userName', result.name);
+      if (result.token) {
+        localStorage.setItem('token', result.token);
+      }
       // Token is now set securely via HttpOnly cookie by the backend
 
       // Save the Google profile photo so avatars display immediately

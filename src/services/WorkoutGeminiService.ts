@@ -45,8 +45,9 @@ export const analyzeWorkout = async (
             modelType: modelType
         }, {
             headers: {
-                'Content-Type': 'application/json',
-            },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
             signal: controller.signal,
         })
         const text = response.data.data;

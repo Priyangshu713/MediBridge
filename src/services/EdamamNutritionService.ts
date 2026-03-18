@@ -69,8 +69,9 @@ export const fetchNutritionFromGemini = async (apiKey: string): Promise<Nutritio
     const controller = new AbortController();
     const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL_PROD}/get-Nutrition`, {
       headers: {
-        'Content-Type': 'application/json',
-      },
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
       signal: controller.signal,
     })
     const text = response.data.data;
