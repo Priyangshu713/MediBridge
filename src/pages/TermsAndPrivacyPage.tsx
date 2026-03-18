@@ -219,7 +219,7 @@ const TermsAndPrivacyPage = () => {
 
                                 <section>
                                     <h3 className="font-medium text-foreground mb-2">9. Contact Us</h3>
-                                    <p>If you have any questions about this Privacy Policy, please contact us at privacy@medibridge.app.</p>
+                                    <p>If you have any questions about this Privacy Policy, please contact us at support@medibridge.qzz.io.</p>
                                 </section>
                             </div>
                         </motion.div>
@@ -317,7 +317,7 @@ const TermsAndPrivacyPage = () => {
                                         <li>Right to data portability</li>
                                         <li>Right to object to processing</li>
                                     </ul>
-                                    <p className="mt-2">To exercise these rights, please contact our Data Protection Officer at dpo@medibridge.app.</p>
+                                    <p className="mt-2">To exercise these rights, please contact our Data Protection Officer at support@medibridge.qzz.io.</p>
                                 </section>
 
                                 <section>
@@ -328,7 +328,7 @@ const TermsAndPrivacyPage = () => {
                                         MediBridge<br />
                                         123 Health Street<br />
                                         Wellness City, 10001<br />
-                                        dpo@medibridge.app
+                                        support@medibridge.qzz.io
                                     </p>
                                 </section>
 
