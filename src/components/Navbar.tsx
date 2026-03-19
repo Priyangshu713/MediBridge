@@ -246,19 +246,20 @@ const Navbar = () => {
     return cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
   };
 
-  const navItems = [
-    { path: '/', label: 'Home', icon: <Heart className="mr-2 h-4 w-4" /> },
-    { path: '/profile', label: 'Profile', icon: <User className="mr-2 h-4 w-4" /> },
-    { path: '/health-report', label: 'Reports', icon: <Heart className="mr-2 h-4 w-4" /> },
-    { path: '/nutrition', label: 'Diet', icon: <Apple className="mr-2 h-4 w-4" /> },
-    { path: '/wellness', label: 'Wellness', icon: <Sparkles className="mr-2 h-4 w-4" /> },
-    ...(isDoctorUser ? [] : [{ path: '/doctor-finder', label: 'Doctors', icon: <UserRound className="mr-2 h-4 w-4" /> }]),
-    { path: '/ai-bot', label: 'AI', icon: <Bot className="mr-2 h-4 w-4" /> },
-    { path: '/about', label: 'About', icon: <Info className="mr-2 h-4 w-4" /> },
-    //  Temporarily disabled Doctor Portal
-    ...(isDoctorUser ? [{ path: '/doctor-portal', label: 'Portal', icon: <UserRound className="mr-2 h-4 w-4" /> }] : []),
-
+  const allNavItems = [
+    { path: '/', label: 'Home', icon: <Heart className="mr-2 h-4 w-4" />, auth: false },
+    { path: '/profile', label: 'Profile', icon: <User className="mr-2 h-4 w-4" />, auth: true },
+    { path: '/health-report', label: 'Reports', icon: <Heart className="mr-2 h-4 w-4" />, auth: true },
+    { path: '/nutrition', label: 'Diet', icon: <Apple className="mr-2 h-4 w-4" />, auth: true },
+    { path: '/wellness', label: 'Wellness', icon: <Sparkles className="mr-2 h-4 w-4" />, auth: true },
+    ...(isDoctorUser ? [] : [{ path: '/doctor-finder', label: 'Doctors', icon: <UserRound className="mr-2 h-4 w-4" />, auth: true }]),
+    { path: '/ai-bot', label: 'AI', icon: <Bot className="mr-2 h-4 w-4" />, auth: false },
+    { path: '/about', label: 'About', icon: <Info className="mr-2 h-4 w-4" />, auth: false },
+    ...(isDoctorUser ? [{ path: '/doctor-portal', label: 'Portal', icon: <UserRound className="mr-2 h-4 w-4" />, auth: true }] : []),
   ];
+
+  // Only show auth-required items when user is logged in
+  const navItems = allNavItems.filter(item => !item.auth || isAuthenticated || isDoctorUser);
 
   // Load user profile data including profile image
   useEffect(() => {
