@@ -115,7 +115,7 @@ function App() {
 
   // Define public paths that don't require authentication
   // NOTE: /admin handles its own authentication via Supabase inside the AdminPortal component.
-  const publicPaths = ['/profile', '/ai-bot', '/forgot-password', '/reset-password', '/about', '/contact', '/doctor-portal'];
+  const publicPaths = ['/profile', '/ai-bot', '/forgot-password', '/reset-password', '/about', '/contact', '/doctor-portal', '/terms-privacy'];
 
   return (
     <>
