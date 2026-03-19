@@ -152,74 +152,132 @@ const TermsAndPrivacyPage = () => {
 
                             <div className="space-y-4 text-muted-foreground">
                                 <section>
-                                    <h3 className="font-medium text-foreground mb-2">1. Data Collection</h3>
-                                    <p>MediBridge is committed to protecting your privacy. We collect and store your account information and health data securely on our servers to provide you with a consistent experience across all your devices.</p>
-                                </section>
-
-                                <section>
-                                    <h3 className="font-medium text-foreground mb-2">2. Information We Collect</h3>
-                                    <p>We collect only the following information:</p>
+                                    <h3 className="font-medium text-foreground mb-2">1. Data Accessed</h3>
+                                    <p>MediBridge is committed to protecting your privacy. When you use our application, we access and collect the following types of data:</p>
+                                    <h4 className="font-medium text-foreground mt-3 mb-1">a) Google User Data (via Google Sign-In)</h4>
+                                    <p>If you choose to sign in using Google OAuth, we access the following data from your Google account:</p>
                                     <ul className="list-disc pl-5 space-y-1 mt-2">
-                                        <li>Your name</li>
-                                        <li>Email address</li>
-                                        <li>Password (encrypted)</li>
-                                        <li>Basic account activity data (login dates, app usage statistics)</li>
+                                        <li><strong>Name:</strong> Your full name as registered with your Google account</li>
+                                        <li><strong>Email address:</strong> Your primary Google email address</li>
+                                        <li><strong>Profile picture:</strong> Your Google account profile photo</li>
                                     </ul>
-                                </section>
-
-                                <section>
-                                    <h3 className="font-medium text-foreground mb-2">3. Secure Data Storage</h3>
-                                    <p>Your health data, including but not limited to:</p>
+                                    <p className="mt-2">We do not access any other Google user data beyond what is listed above. We do not access your Google contacts, Google Drive files, calendar events, or any other Google services data.</p>
+                                    <h4 className="font-medium text-foreground mt-3 mb-1">b) Data You Provide Directly</h4>
+                                    <p>In addition to Google user data, we collect the following information that you voluntarily provide:</p>
                                     <ul className="list-disc pl-5 space-y-1 mt-2">
+                                        <li>Password (encrypted, for email/password sign-up only)</li>
                                         <li>Health metrics and measurements</li>
-                                        <li>Personal health history</li>
-                                        <li>Medical records</li>
-                                        <li>Nutrition information</li>
-                                        <li>Fitness data</li>
-                                        <li>Goals and progress</li>
+                                        <li>Personal health history and medical records</li>
+                                        <li>Nutrition and fitness information</li>
+                                        <li>Wellness journal entries (mood, stress levels, notes)</li>
+                                        <li>Goals and progress tracking data</li>
+                                        <li>Appointment booking details</li>
                                     </ul>
-                                    <p className="mt-2"><strong>These data points are stored securely on our servers using modern encryption standards to ensure they are available to you whenever you sign in.</strong></p>
-                                </section>
-
-                                <section>
-                                    <h3 className="font-medium text-foreground mb-2">4. How We Use Your Information</h3>
-                                    <p>We use your login information solely for the purpose of:</p>
+                                    <h4 className="font-medium text-foreground mt-3 mb-1">c) Automatically Collected Data</h4>
                                     <ul className="list-disc pl-5 space-y-1 mt-2">
-                                        <li>Account authentication and security</li>
-                                        <li>Providing account-related notifications</li>
-                                        <li>Improving our services</li>
+                                        <li>Basic account activity data (login dates, app usage statistics)</li>
+                                        <li>Device and browser information for security purposes</li>
                                     </ul>
                                 </section>
 
                                 <section>
-                                    <h3 className="font-medium text-foreground mb-2">5. Data Security</h3>
-                                    <p>We implement robust security measures to protect your login information. Your password is encrypted, and we use industry-standard protocols to safeguard your data.</p>
-                                </section>
-
-                                <section>
-                                    <h3 className="font-medium text-foreground mb-2">6. Data Sharing</h3>
-                                    <p>We do not sell, trade, or otherwise transfer your personal information to third parties. Your login information is only used for providing our service to you.</p>
-                                </section>
-
-                                <section>
-                                    <h3 className="font-medium text-foreground mb-2">7. Your Control</h3>
-                                    <p>You can:</p>
+                                    <h3 className="font-medium text-foreground mb-2">2. Data Usage</h3>
+                                    <p>We use, process, and handle the Google user data and other collected data strictly for the following purposes:</p>
+                                    <h4 className="font-medium text-foreground mt-3 mb-1">a) Google User Data Usage</h4>
                                     <ul className="list-disc pl-5 space-y-1 mt-2">
-                                        <li>Access and update your account information and health data at any time</li>
-                                        <li>Delete your account and all associated data from our servers</li>
-                                        <li>Manage your health data securely through your account dashboard</li>
-                                        <li>Export or delete your data at your discretion</li>
+                                        <li><strong>Name and profile picture:</strong> Used solely to personalize your MediBridge account profile and display your identity within the application</li>
+                                        <li><strong>Email address:</strong> Used for account authentication, account recovery, and sending essential service-related communications (e.g., appointment confirmations, security alerts)</li>
+                                    </ul>
+                                    <p className="mt-2">We do <strong>not</strong> use your Google user data for advertising, marketing to third parties, or any purpose unrelated to the core functionality of MediBridge.</p>
+                                    <h4 className="font-medium text-foreground mt-3 mb-1">b) Health and Application Data Usage</h4>
+                                    <ul className="list-disc pl-5 space-y-1 mt-2">
+                                        <li>Providing personalized health insights and AI-powered recommendations</li>
+                                        <li>Enabling cross-device synchronization of your health data</li>
+                                        <li>Facilitating appointment bookings with healthcare professionals</li>
+                                        <li>Generating wellness reports and visualizations for your personal use</li>
+                                        <li>Improving and maintaining the quality of our services</li>
                                     </ul>
                                 </section>
 
                                 <section>
-                                    <h3 className="font-medium text-foreground mb-2">8. Updates to Privacy Policy</h3>
-                                    <p>We may update this Privacy Policy periodically. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.</p>
+                                    <h3 className="font-medium text-foreground mb-2">3. Data Sharing</h3>
+                                    <p>MediBridge does <strong>not</strong> sell, rent, trade, or otherwise transfer your personal information or Google user data to any third parties for their own purposes. Specifically:</p>
+                                    <ul className="list-disc pl-5 space-y-1 mt-2">
+                                        <li><strong>No sale of data:</strong> We never sell your Google user data or any other personal data to third parties</li>
+                                        <li><strong>No advertising use:</strong> Your data is never shared with advertisers or used for targeted advertising</li>
+                                        <li><strong>No unauthorized sharing:</strong> We do not share your data with third parties for purposes unrelated to MediBridge's core functionality</li>
+                                    </ul>
+                                    <p className="mt-3"><strong>Limited exceptions where data may be shared:</strong></p>
+                                    <ul className="list-disc pl-5 space-y-1 mt-2">
+                                        <li><strong>With your explicit consent:</strong> If you choose to share wellness data with a doctor during an appointment booking, the data you select will be included in the appointment report. This sharing is entirely optional and initiated by you</li>
+                                        <li><strong>Service providers:</strong> We use trusted third-party services (such as cloud hosting and authentication providers) that may process your data on our behalf. These providers are contractually bound to use your data only for providing their services to us and are obligated to protect your data</li>
+                                        <li><strong>Legal requirements:</strong> We may disclose your data if required to do so by law or in response to valid legal requests by public authorities</li>
+                                    </ul>
                                 </section>
 
                                 <section>
-                                    <h3 className="font-medium text-foreground mb-2">9. Contact Us</h3>
-                                    <p>If you have any questions about this Privacy Policy, please contact us at support@medibridge.qzz.io.</p>
+                                    <h3 className="font-medium text-foreground mb-2">4. Data Storage & Protection</h3>
+                                    <p>We take the security and protection of your data seriously. The following measures are in place to safeguard your information:</p>
+                                    <h4 className="font-medium text-foreground mt-3 mb-1">a) Encryption</h4>
+                                    <ul className="list-disc pl-5 space-y-1 mt-2">
+                                        <li><strong>In transit:</strong> All data transmitted between your device and our servers is encrypted using HTTPS/TLS (SSL) protocols</li>
+                                        <li><strong>At rest:</strong> Sensitive data, including passwords and authentication tokens, is encrypted using industry-standard encryption algorithms (bcrypt for passwords, secure HTTP-only cookies for sessions)</li>
+                                    </ul>
+                                    <h4 className="font-medium text-foreground mt-3 mb-1">b) Access Controls</h4>
+                                    <ul className="list-disc pl-5 space-y-1 mt-2">
+                                        <li>Strict access controls ensure that only authorized personnel can access server infrastructure</li>
+                                        <li>Authentication tokens are stored as secure, HTTP-only cookies to prevent unauthorized client-side access</li>
+                                        <li>Google OAuth tokens are used only during the authentication flow and are not stored long-term</li>
+                                    </ul>
+                                    <h4 className="font-medium text-foreground mt-3 mb-1">c) Infrastructure Security</h4>
+                                    <ul className="list-disc pl-5 space-y-1 mt-2">
+                                        <li>Our application is hosted on industry-leading cloud platforms (Vercel, MongoDB Atlas) with built-in security features</li>
+                                        <li>Regular security reviews are conducted to identify and address potential vulnerabilities</li>
+                                        <li>CORS policies are configured to restrict unauthorized cross-origin access</li>
+                                    </ul>
+                                </section>
+
+                                <section>
+                                    <h3 className="font-medium text-foreground mb-2">5. Data Retention & Deletion</h3>
+                                    <p>We retain your data only for as long as necessary to provide our services and fulfill the purposes described in this policy:</p>
+                                    <h4 className="font-medium text-foreground mt-3 mb-1">a) Retention Periods</h4>
+                                    <ul className="list-disc pl-5 space-y-1 mt-2">
+                                        <li><strong>Account information (including Google user data):</strong> Retained for as long as your account is active</li>
+                                        <li><strong>Health data and wellness entries:</strong> Retained securely on our servers for as long as your account is active, or until you choose to delete individual entries</li>
+                                        <li><strong>Usage logs:</strong> Retained for up to 90 days, then automatically deleted</li>
+                                        <li><strong>Appointment records:</strong> Retained for the duration of your account's existence for your reference</li>
+                                    </ul>
+                                    <h4 className="font-medium text-foreground mt-3 mb-1">b) How to Request Deletion</h4>
+                                    <p>You have the right to request the deletion of your data at any time. You can:</p>
+                                    <ul className="list-disc pl-5 space-y-1 mt-2">
+                                        <li><strong>Delete individual data:</strong> Remove specific health entries, wellness journal records, or appointment data through your account dashboard</li>
+                                        <li><strong>Delete your entire account:</strong> Navigate to your account settings and use the "Delete Account" option. This will permanently remove your account and all associated data — including any Google user data we have stored — from our servers</li>
+                                        <li><strong>Contact us:</strong> Email us at <strong>support@medibridge.qzz.io</strong> to request a full data deletion. We will process your request within 30 days</li>
+                                    </ul>
+                                    <p className="mt-2">Upon account deletion, all your personal data, Google user data, health records, and any other stored information will be permanently and irreversibly removed from our servers.</p>
+                                </section>
+
+                                <section>
+                                    <h3 className="font-medium text-foreground mb-2">6. Your Rights & Control</h3>
+                                    <p>You have full control over your data. At any time, you can:</p>
+                                    <ul className="list-disc pl-5 space-y-1 mt-2">
+                                        <li>Access and review all personal data we hold about you</li>
+                                        <li>Update or correct your account information</li>
+                                        <li>Export your health data for personal use</li>
+                                        <li>Revoke Google OAuth access through your Google Account settings at <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer" className="text-primary underline">myaccount.google.com/permissions</a></li>
+                                        <li>Delete your account and all associated data</li>
+                                    </ul>
+                                </section>
+
+                                <section>
+                                    <h3 className="font-medium text-foreground mb-2">7. Updates to Privacy Policy</h3>
+                                    <p>We may update this Privacy Policy periodically to reflect changes in our practices, technology, or legal requirements. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date. For significant changes, we may also notify you via email.</p>
+                                </section>
+
+                                <section>
+                                    <h3 className="font-medium text-foreground mb-2">8. Contact Us</h3>
+                                    <p>If you have any questions, concerns, or requests regarding this Privacy Policy or how we handle your data, please contact us at:</p>
+                                    <p className="mt-2"><strong>Email:</strong> support@medibridge.qzz.io</p>
                                 </section>
                             </div>
                         </motion.div>

@@ -119,6 +119,7 @@ export const analyzeAdvancedHealthData = async (
         {
           headers: {
             "Content-Type": "application/json",
+            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
           },
           signal: controller.signal,
         },
@@ -131,11 +132,12 @@ export const analyzeAdvancedHealthData = async (
           `${API_BASE_URL}/health-report`,
           {
             ...payload,
-            apiKey: apiKey // Add apiKey to fallback payload
+            apiKey: apiKey
           },
           {
             headers: {
               "Content-Type": "application/json",
+              ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
             },
             signal: controller.signal,
           },

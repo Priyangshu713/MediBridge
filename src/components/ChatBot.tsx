@@ -27,6 +27,42 @@ interface Message {
   isStreaming?: boolean;
 }
 
+/**
+ * Parses thinking markers from a stored model response.
+ * Splits "THINKING PROCESS: ... RESPONSE_BEGINS_HEALTH_CONNECT: answer" into
+ * { thinking, answer } so history loads with proper thinking UI.
+ */
+const parseThinkingFromHistory = (rawText: string): { thinking: string | null; answer: string } => {
+  const thinkingMarker = 'THINKING PROCESS:';
+  const answerMarker = 'RESPONSE_BEGINS_HEALTH_CONNECT:';
+  const altAnswerMarker = 'ANSWER:';
+
+  const thinkingIdx = rawText.indexOf(thinkingMarker);
+  if (thinkingIdx === -1) {
+    return { thinking: null, answer: rawText };
+  }
+
+  let answerIdx = rawText.indexOf(answerMarker, thinkingIdx);
+  let markerLen = answerMarker.length;
+  if (answerIdx === -1) {
+    answerIdx = rawText.indexOf(altAnswerMarker, thinkingIdx);
+    markerLen = altAnswerMarker.length;
+  }
+
+  if (answerIdx === -1) {
+    // Has thinking marker but no answer marker — treat everything after thinking marker as thinking, no answer yet
+    return {
+      thinking: rawText.substring(thinkingIdx + thinkingMarker.length).trim(),
+      answer: '',
+    };
+  }
+
+  const thinkingText = rawText.substring(thinkingIdx + thinkingMarker.length, answerIdx).trim();
+  const answerText = rawText.substring(answerIdx + markerLen).trim();
+
+  return { thinking: thinkingText, answer: answerText };
+};
+
 interface ChatBotProps {
   useGemini: boolean;
   geminiTier?: 'free' | 'lite' | 'pro';
@@ -89,11 +125,27 @@ const ChatBot: React.FC<ChatBotProps> = ({ useGemini: initialUseGemini, geminiTi
         try {
           const history = await fetchChatHistory(sessionId);
           if (history.length > 0) {
-            const formattedMessages: Message[] = history.map((msg, index) => ({
-              id: `history-${index}-${Date.now()}`,
-              text: msg.parts[0].text,
-              sender: msg.role === 'model' ? 'bot' : 'user',
-            }));
+            const formattedMessages: Message[] = history.map((msg, index) => {
+              const rawText = msg.parts[0].text;
+              const sender: 'user' | 'bot' = msg.role === 'model' ? 'bot' : 'user';
+
+              // For model messages, parse out thinking markers so they display correctly
+              if (sender === 'bot') {
+                const { thinking, answer } = parseThinkingFromHistory(rawText);
+                return {
+                  id: `history-${index}-${Date.now()}`,
+                  text: answer,
+                  sender,
+                  thinking: thinking ? [thinking] : undefined,
+                };
+              }
+
+              return {
+                id: `history-${index}-${Date.now()}`,
+                text: rawText,
+                sender,
+              };
+            });
 
             setMessages(prev => {
               // If the only message is the default greeting, replace it
@@ -435,11 +487,26 @@ Click the "Upgrade" button below to access premium features.`;
       try {
         const history = await fetchChatHistory(existingSessionId);
         if (history.length > 0) {
-          const formattedMessages: Message[] = history.map((msg, index) => ({
-            id: `history-${index}-${Date.now()}`,
-            text: msg.parts[0].text,
-            sender: msg.role === 'model' ? 'bot' : 'user',
-          }));
+          const formattedMessages: Message[] = history.map((msg, index) => {
+            const rawText = msg.parts[0].text;
+            const sender: 'user' | 'bot' = msg.role === 'model' ? 'bot' : 'user';
+
+            if (sender === 'bot') {
+              const { thinking, answer } = parseThinkingFromHistory(rawText);
+              return {
+                id: `history-${index}-${Date.now()}`,
+                text: answer,
+                sender,
+                thinking: thinking ? [thinking] : undefined,
+              };
+            }
+
+            return {
+              id: `history-${index}-${Date.now()}`,
+              text: rawText,
+              sender,
+            };
+          });
           setMessages(formattedMessages);
           return;
         }

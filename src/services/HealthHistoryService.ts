@@ -34,6 +34,10 @@ export const saveHealthHistory = async (
       analysis,
       timeOfDay,
       dayOfWeek
+    }, {
+      headers: {
+        ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+      }
     });
 
     if (response.data && response.data.success) {
@@ -48,7 +52,11 @@ export const saveHealthHistory = async (
 
 export const getHealthHistory = async (userId: string): Promise<HistoryEntry[]> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/api/get-history/${userId}`);
+    const response = await axios.get(`${API_BASE_URL}/api/get-history/${userId}`, {
+      headers: {
+        ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+      }
+    });
     if (response.data && response.data.success) {
       return response.data.data;
     }

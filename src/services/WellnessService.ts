@@ -18,6 +18,10 @@ export const analyzeWellnessEntry = async (entry: string, date?: string): Promis
         const response = await axios.post(`${API_BASE_URL}/api/analyze-wellness`, {
             entry,
             date: date || new Date().toISOString()
+        }, {
+            headers: {
+                ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+            }
         });
 
         if (response.data && response.data.success) {
