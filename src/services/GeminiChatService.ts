@@ -155,7 +155,11 @@ export const createGeminiChatSession = async (
 
 export const fetchChatHistory = async (sessionId: string): Promise<ChatMessage[]> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/api/chat-history/${sessionId}`);
+    const response = await axios.get(`${API_BASE_URL}/api/chat-history/${sessionId}`, {
+      headers: {
+        ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+      }
+    });
     if (response.data && response.data.success) {
       return response.data.data.map((msg: any) => ({
         role: msg.role,

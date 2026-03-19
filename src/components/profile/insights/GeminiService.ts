@@ -65,6 +65,7 @@ export const fetchInsightsFromGemini = async (
       {
         headers: {
           'Content-Type': 'application/json',
+          ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
         },
         signal: controller.signal,
       }
