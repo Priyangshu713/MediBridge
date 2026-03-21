@@ -75,7 +75,6 @@ const DoctorFinder = () => {
 
   return (
     <div className="min-h-screen flex flex-col safe-area-insets">
-      <Navbar />
       <main className="container mx-auto pt-16 sm:pt-20 md:pt-24 pb-16 px-4 md:px-8 flex-1">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8 mt-4">

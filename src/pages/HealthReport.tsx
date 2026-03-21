@@ -21,7 +21,6 @@ import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useHealthStore } from '@/store/healthStore';
 import { useHealthRecommendations } from '@/hooks/useHealthRecommendations';
-import Navbar from '@/components/Navbar';
 import AnimatedHealthScore from '@/components/health-report/AnimatedHealthScore';
 import HealthMetricBar from '@/components/health-report/HealthMetricBar';
 import RecommendationCard from '@/components/health-report/RecommendationCard';
@@ -99,7 +98,6 @@ const HealthReport: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
 
       <main className="container mx-auto max-w-5xl pt-24 pb-16 px-4">
         <motion.div

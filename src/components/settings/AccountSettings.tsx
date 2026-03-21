@@ -675,6 +675,11 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ isOpen, onClose }) =>
             setProfileData(prev => prev ? { ...prev, tier: 'free' } : prev);
             localStorage.setItem('geminiTier', 'free');
             setShowPaymentDetails(false);
+            
+            // Reload page after a short delay to reflect the tier change across all components
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
         } catch (error: any) {
             console.error('Error cancelling subscription:', error);
             setCancelError(error.message || 'Failed to cancel subscription.');

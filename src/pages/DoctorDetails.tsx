@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -76,7 +75,6 @@ const DoctorDetails = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col safe-area-insets">
-        <Navbar />
         <main className="container mx-auto pt-16 sm:pt-20 md:pt-24 pb-16 px-4 md:px-8 flex-1">
           <div className="max-w-4xl mx-auto animate-pulse space-y-8">
             <div className="h-12 bg-gray-200 rounded-md w-1/2"></div>
@@ -97,7 +95,6 @@ const DoctorDetails = () => {
   if (!doctor) {
     return (
       <div className="min-h-screen flex flex-col safe-area-insets">
-        <Navbar />
         <main className="container mx-auto pt-16 sm:pt-20 md:pt-24 pb-16 px-4 md:px-8 flex-1">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-2xl font-bold mb-4">Specialist Not Found</h1>
@@ -141,7 +138,6 @@ const DoctorDetails = () => {
 
   return (
     <div className="min-h-screen flex flex-col safe-area-insets">
-      <Navbar />
       <main className="container mx-auto pt-16 sm:pt-20 md:pt-24 pb-16 px-4 md:px-8 flex-1">
         <div className="max-w-4xl mx-auto">
           <Button variant="ghost" className="mb-6" onClick={() => navigate('/doctor-finder')}>

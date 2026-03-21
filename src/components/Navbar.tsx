@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Heart, User, Apple, Bot, Menu, X, Info, LogIn, LogOut, History, UserRound, Settings, Sparkles } from 'lucide-react';
+import { Heart, User, Apple, Bot, Menu, X, Info, LogIn, LogOut, History, UserRound, Settings, Sparkles, Activity } from 'lucide-react';
 import { useHealthStore } from '@/store/healthStore';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -453,11 +453,16 @@ const Navbar = () => {
                         </span>
                       )}
                     </div>
-                    {/* Low appointment credits warning */}
-                    {!isDoctorUser && appointmentCredits === 1 && (
-                      <div className="mx-2 mb-1 px-3 py-2 bg-amber-50 border border-amber-200 rounded-md">
-                        <p className="text-xs text-amber-800 font-medium">⚠️ 1 appointment credit left</p>
-                        <p className="text-xs text-amber-700 mt-0.5">Buy credits to keep seeing doctors.</p>
+                    {/* Pro User Appointment Credits */}
+                    {!isDoctorUser && isProUser && (
+                      <div className="flex items-center justify-between px-4 py-2 mt-1 mb-1 bg-primary/5 mx-2 rounded-md border border-primary/10">
+                        <div className="flex items-center text-sm font-medium text-primary">
+                          <Activity className="mr-2 h-4 w-4" />
+                          <span>Doctor visits left</span>
+                        </div>
+                        <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                          {appointmentCredits}
+                        </span>
                       </div>
                     )}
                     <DropdownMenuSeparator />
@@ -488,7 +493,7 @@ const Navbar = () => {
           type="button"
           className={cn(
             "md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-full transition-colors duration-300 focus:outline-none relative overflow-hidden",
-            (isHomePage && !isScrolled) ? "text-white hover:bg-white/10" : "text-foreground hover:bg-black/10"
+            (isScrolled || (isHomePage && !isScrolled)) ? "text-white hover:bg-white/10" : "text-foreground hover:bg-black/10"
           )}
           onClick={toggleMenu}
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
@@ -578,6 +583,19 @@ const Navbar = () => {
                     )}
                   </div>
                 </div>
+                
+                {/* Pro User Appointment Credits Mobile */}
+                {!isDoctorUser && isProUser && (
+                  <div className="flex items-center justify-between px-4 py-3 mb-3 bg-primary/5 rounded-xl border border-primary/10 mx-0">
+                    <div className="flex items-center text-sm font-medium text-primary">
+                      <Activity className="mr-2 h-4 w-4" />
+                      <span>Doctor visits left</span>
+                    </div>
+                    <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      {appointmentCredits}
+                    </span>
+                  </div>
+                )}
                 <DropdownMenuSeparator className="my-1" />
               </>
             )}

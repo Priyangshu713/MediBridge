@@ -9,7 +9,6 @@ import {
   Github,
   Linkedin
 } from 'lucide-react';
-import Navbar from '@/components/Navbar';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -85,7 +84,6 @@ const AboutPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
 
       <main className="container mx-auto px-4 pt-24 pb-16">
         <motion.div

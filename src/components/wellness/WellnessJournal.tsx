@@ -27,7 +27,6 @@ import MoodTrendChart from './MoodTrendChart';
 import EmotionRadarChart from './EmotionRadarChart';
 import AnalysisVisuals from './AnalysisVisuals';
 import WellnessHistory from './WellnessHistory';
-import Navbar from '@/components/Navbar';
 
 const MOOD_EMOJIS: Record<number, string> = {
   1: '😢', 2: '😞', 3: '😕', 4: '😐', 5: '🙂',
@@ -186,7 +185,6 @@ const WellnessJournal: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-background">
-            <Navbar />
 
             <div className="container mx-auto p-4 md:p-6 max-w-6xl pt-20 md:pt-24">
                 <motion.div

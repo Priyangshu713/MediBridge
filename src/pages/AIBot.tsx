@@ -170,7 +170,6 @@ const AIBot = () => {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-health-mint/10 safe-area-insets">
-        <Navbar />
         <main className="container mx-auto max-w-3xl pt-24 pb-16 px-4">
           <div className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-gradient mb-2">
@@ -235,7 +234,6 @@ const AIBot = () => {
   // If authenticated, show the normal AI bot page
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
       
       <main className="container mx-auto max-w-5xl pt-24 pb-16 px-4">
         <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

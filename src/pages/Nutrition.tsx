@@ -4,7 +4,6 @@ import { useHealthStore } from '@/store/healthStore';
 import { useNutritionPlan } from '@/hooks/useNutritionPlan';
 import { useNutritionData } from '@/hooks/useNutritionData';
 import { useIsMobile } from '@/hooks/use-mobile';
-import Navbar from '@/components/Navbar';
 import RecipeDialog from '@/components/nutrition/RecipeDialog';
 import FoodInfoDialog from '@/components/nutrition/FoodInfoDialog';
 import SubscriptionPlansDialog from '@/components/common/SubscriptionPlansDialog';
@@ -222,7 +221,6 @@ const Nutrition = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
 
       <main className="container mx-auto max-w-5xl pt-24 pb-16 px-4">
         <header className="mb-8 text-left">

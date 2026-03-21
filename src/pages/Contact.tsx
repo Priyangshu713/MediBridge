@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, Mail, Phone, MapPin, Send, Loader2, Clock, Check, ChevronDown, ChevronUp, Twitter, Linkedin, Facebook, Instagram } from 'lucide-react';
-import Navbar from '@/components/Navbar';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -170,7 +169,6 @@ const ContactPage = () => {
 
     return (
         <div className="min-h-screen bg-background">
-            <Navbar />
 
             {/* Background elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
