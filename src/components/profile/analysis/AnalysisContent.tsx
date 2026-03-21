@@ -12,7 +12,7 @@ interface AnalysisContentProps {
 
 const AnalysisContent: React.FC<AnalysisContentProps> = ({ analysis, loading, error }) => {
   // Define the categories we want to display
-  const categories = ['overall', 'sleep', 'exercise', 'nutrition', 'stress', 'hydration', 'lifestyle', 'medical'];
+  const categories = ['overall', 'sleep', 'exercise', 'nutrition', 'stress', 'hydration', 'lifestyle'];
 
   return (
     <>

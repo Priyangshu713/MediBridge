@@ -35,7 +35,7 @@ const CaffeineSection: React.FC<CaffeineSectionProps> = ({ form }) => {
                 min={0}
                 max={10}
                 step={1}
-                defaultValue={[field.value]}
+                value={[field.value]}
                 onValueChange={(vals) => field.onChange(vals[0])}
                 className="py-4"
               />

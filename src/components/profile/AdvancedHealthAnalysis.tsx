@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Tabs } from "@/components/ui/tabs";
 import {
@@ -264,10 +264,13 @@ const AdvancedHealthAnalysis: React.FC<AdvancedHealthAnalysisProps> = ({
     fetchAnalysis(true);
   };
 
+  // Memoize the health data key to prevent infinite re-renders from object reference changes
+  const healthDataKey = useMemo(() => JSON.stringify(healthData), [healthData]);
+
   useEffect(() => {
     // Force refresh on mount ONLY if forceRefresh prop is true
     fetchAnalysis(forceRefresh);
-  }, [healthData, geminiModel, forceRefresh]);
+  }, [healthDataKey, geminiModel, forceRefresh]);
 
   const container = {
     hidden: { opacity: 0 },

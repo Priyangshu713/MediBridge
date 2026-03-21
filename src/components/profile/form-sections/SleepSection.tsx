@@ -38,7 +38,7 @@ const SleepSection: React.FC<SleepSectionProps> = ({ form }) => {
                   min={0}
                   max={12}
                   step={0.5}
-                  defaultValue={[field.value]}
+                  value={[field.value]}
                   onValueChange={(vals) => field.onChange(vals[0])}
                   className="py-4"
                 />
@@ -65,7 +65,7 @@ const SleepSection: React.FC<SleepSectionProps> = ({ form }) => {
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  value={field.value}
                   className="flex flex-col space-y-1"
                 >
                   <div className="flex items-center space-x-2">

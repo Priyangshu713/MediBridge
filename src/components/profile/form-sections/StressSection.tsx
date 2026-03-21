@@ -35,7 +35,7 @@ const StressSection: React.FC<StressSectionProps> = ({ form }) => {
                 min={1}
                 max={10}
                 step={1}
-                defaultValue={[field.value]}
+                value={[field.value]}
                 onValueChange={(vals) => field.onChange(vals[0])}
                 className="py-4"
               />

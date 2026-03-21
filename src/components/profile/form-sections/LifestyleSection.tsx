@@ -37,7 +37,7 @@ const LifestyleSection: React.FC<LifestyleSectionProps> = ({ form }) => {
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  value={field.value}
                   className="flex flex-col space-y-1"
                 >
                   <div className="flex items-center space-x-2">
@@ -72,7 +72,7 @@ const LifestyleSection: React.FC<LifestyleSectionProps> = ({ form }) => {
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  value={field.value}
                   className="flex flex-col space-y-1"
                 >
                   <div className="flex items-center space-x-2">

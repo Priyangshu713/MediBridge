@@ -43,7 +43,7 @@ const NutritionSection: React.FC<NutritionSectionProps> = ({ form }) => {
                   min={0}
                   max={5}
                   step={0.1}
-                  defaultValue={[field.value]}
+                  value={[field.value]}
                   onValueChange={(vals) => field.onChange(vals[0])}
                   className="py-4"
                 />
@@ -95,7 +95,7 @@ const NutritionSection: React.FC<NutritionSectionProps> = ({ form }) => {
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  value={field.value}
                   className="flex flex-col space-y-1"
                 >
                   <div className="flex items-center space-x-2">

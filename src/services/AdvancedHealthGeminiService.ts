@@ -1,6 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
 import { HealthData, GeminiModelType } from "@/store/healthStore";
-import { useRef } from "react";
 import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
@@ -47,26 +46,28 @@ export const analyzeAdvancedHealthData = async (
   try {
     console.log("darta come from advance health ", combinedData, modelType);
     // Validate that required properties exist
+    // Use ?? instead of || for numeric fields so that 0 is preserved (0 is falsy with ||)
+    const waterIntakeVal = combinedData.waterIntake ?? 2;
     const safeData = {
-      age: combinedData.age || 30,
+      age: combinedData.age ?? 30,
       gender: combinedData.gender || "Not specified",
-      height: combinedData.height || 170,
-      weight: combinedData.weight || 70,
-      bmi: combinedData.bmi || 24.2,
+      height: combinedData.height ?? 170,
+      weight: combinedData.weight ?? 70,
+      bmi: combinedData.bmi ?? 24.2,
       bmiCategory: combinedData.bmiCategory || "Normal",
-      bloodGlucose: combinedData.bloodGlucose || 90,
-      sleepHours: combinedData.sleepHours || 7,
+      bloodGlucose: combinedData.bloodGlucose ?? 90,
+      sleepHours: combinedData.sleepHours ?? 7,
       sleepQuality: combinedData.sleepQuality || "Average",
-      exerciseHours: combinedData.exerciseHours || 3,
-      stressLevel: combinedData.stressLevel || 5,
-      waterIntake: combinedData.waterIntake || 2,
-      hydrationScore: combinedData.hydrationScore || 50,
-      caffeine: combinedData.caffeine !== undefined ? combinedData.caffeine : 2,
+      exerciseHours: combinedData.exerciseHours ?? 3,
+      stressLevel: combinedData.stressLevel ?? 5,
+      waterIntake: waterIntakeVal,
+      hydrationScore: combinedData.hydrationScore ?? Math.min(100, Math.round((waterIntakeVal / 3) * 100)),
+      caffeine: combinedData.caffeine ?? 2,
       diet: combinedData.diet || "Balanced",
-      regularMeals: combinedData.foodHabits?.regularMeals || false,
-      lateNightSnacking: combinedData.foodHabits?.lateNightSnacking || false,
-      fastFood: combinedData.foodHabits?.fastFood || false,
-      highSugar: combinedData.foodHabits?.highSugar || false,
+      regularMeals: combinedData.foodHabits?.regularMeals ?? false,
+      lateNightSnacking: combinedData.foodHabits?.lateNightSnacking ?? false,
+      fastFood: combinedData.foodHabits?.fastFood ?? false,
+      highSugar: combinedData.foodHabits?.highSugar ?? false,
       smoking: combinedData.smoking || "Never",
       alcoholConsumption: combinedData.alcoholConsumption || "Occasional",
       medicalConditions: combinedData.medicalConditions || "None reported",
@@ -148,7 +149,6 @@ export const analyzeAdvancedHealthData = async (
     }
 
     console.log("Received response from backend:", response.data);
-    controller.abort();
     if (!response.data || !response.data.data) {
       console.error("Invalid response format:", response.data);
       throw new Error("Invalid response format from backend");
@@ -156,7 +156,11 @@ export const analyzeAdvancedHealthData = async (
 
     return parseGeminiResponse(response.data.data);
   } catch (error) {
-    // Handle errors gracefully
+    // Handle errors gracefully — check isCancel FIRST since cancelled errors are also Axios errors
+    if (axios.isCancel(error)) {
+      console.warn("Request canceled:", (error as any).message);
+      return [];
+    }
     if (axios.isAxiosError(error)) {
       console.error(
         "Axios error while analyzing advanced health data:",
@@ -172,10 +176,6 @@ export const analyzeAdvancedHealthData = async (
     if (error instanceof Error) {
       console.error("Error analyzing advanced health data:", error.message);
       throw new Error(`Failed to analyze health data: ${error.message}`);
-    }
-    if (axios.isCancel(error)) {
-      console.warn("Request canceled:", error.message);
-      return [];
     }
     console.error("Error analyzing advanced health data:", error);
     throw new Error("Failed to analyze health data. Please try again.");

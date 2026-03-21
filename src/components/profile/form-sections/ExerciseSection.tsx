@@ -35,7 +35,7 @@ const ExerciseSection: React.FC<ExerciseSectionProps> = ({ form }) => {
                 min={0}
                 max={14}
                 step={0.5}
-                defaultValue={[field.value]}
+                value={[field.value]}
                 onValueChange={(vals) => field.onChange(vals[0])}
                 className="py-4"
               />
