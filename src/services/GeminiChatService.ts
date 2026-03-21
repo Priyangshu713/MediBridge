@@ -3,6 +3,16 @@ import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
+// Helper to get auth headers
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  const tier = localStorage.getItem('geminiTier') || 'free';
+  return {
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    'x-user-tier': tier,
+  };
+};
+
 // Message type for chat history
 export interface ChatMessage {
   role: "user" | "model";
@@ -46,7 +56,7 @@ export const createGeminiChatSession = async (
           {
             headers: {
               'Content-Type': 'application/json',
-              ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+              ...getAuthHeaders()
             },
             signal: controller.signal,
           }
@@ -79,7 +89,7 @@ export const createGeminiChatSession = async (
           credentials: 'include',
           headers: {
               'Content-Type': 'application/json',
-              ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+              ...getAuthHeaders()
             },
           body: JSON.stringify({
             sessionId: chatSession,
@@ -88,6 +98,13 @@ export const createGeminiChatSession = async (
         });
 
         if (!response.ok) {
+          if (response.status === 429) {
+            const errorData = await response.json().catch(() => ({}));
+            const err = new Error(errorData.message || 'Free message limit reached');
+            (err as any).status = 429;
+            (err as any).nextResetDate = errorData.nextResetDate;
+            throw err;
+          }
           if (response.status === 404) {
             const errorData = await response.json().catch(() => ({}));
             if (errorData.error?.includes('expired') || errorData.error?.includes('not found') || !errorData.error) {
@@ -156,9 +173,7 @@ export const createGeminiChatSession = async (
 export const fetchChatHistory = async (sessionId: string): Promise<ChatMessage[]> => {
   try {
     const response = await axios.get(`${API_BASE_URL}/api/chat-history/${sessionId}`, {
-      headers: {
-        ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
-      }
+      headers: getAuthHeaders()
     });
     if (response.data && response.data.success) {
       return response.data.data.map((msg: any) => ({
@@ -177,5 +192,43 @@ export const fetchChatHistory = async (sessionId: string): Promise<ChatMessage[]
         console.error("Error fetching chat history:", error);
     }
     return [];
+  }
+};
+
+// AI Usage Status types
+export interface AIUsageStatus {
+  messagesUsed: number;
+  messagesRemaining: number;
+  limit: number;
+  windowDays: number;
+  isExhausted: boolean;
+  nextResetDate: string | null;
+  windowStart: string | null;
+  windowEnd: string | null;
+}
+
+/**
+ * Fetch the server-side AI usage status for the current user.
+ * Returns message counts, remaining, and next reset date for free users.
+ */
+export const fetchAIUsageStatus = async (): Promise<AIUsageStatus> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/api/ai-usage-status`, {
+      headers: getAuthHeaders()
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching AI usage status:', error);
+    // Return default (not exhausted) so the user isn't blocked on errors
+    return {
+      messagesUsed: 0,
+      messagesRemaining: 2,
+      limit: 2,
+      windowDays: 15,
+      isExhausted: false,
+      nextResetDate: null,
+      windowStart: null,
+      windowEnd: null
+    };
   }
 };

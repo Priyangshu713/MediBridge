@@ -9,6 +9,7 @@ import { useDoctorRecommendations } from '@/hooks/useDoctorRecommendations';
 import { useHealthStore } from '@/store/healthStore';
 import { useToast } from '@/hooks/use-toast';
 import SubscriptionPlansDialog from '@/components/common/SubscriptionPlansDialog';
+import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { AlertCircle } from 'lucide-react';
 
@@ -50,9 +51,8 @@ const DoctorFinder = () => {
   }, [geminiTier, selectedTab, healthData.completedProfile, navigate, toast]);
 
   const handleSelectTier = (tier: 'free' | 'lite' | 'pro') => {
-    setGeminiTier(tier);
-    localStorage.setItem('geminiTier', tier);
-    
+    // Tier is managed server-side via subscription payment flow.
+    // Do NOT set tier in localStorage directly — that would be a client-side bypass.
     if (tier === 'free') {
       toast({
         title: "Upgrade required",
@@ -75,6 +75,7 @@ const DoctorFinder = () => {
 
   return (
     <div className="min-h-screen flex flex-col safe-area-insets">
+      <Navbar />
       <main className="container mx-auto pt-16 sm:pt-20 md:pt-24 pb-16 px-4 md:px-8 flex-1">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8 mt-4">

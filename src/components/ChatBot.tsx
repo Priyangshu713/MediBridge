@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bot, Send, Sparkles, Brain, ChevronDown, ChevronUp, Lightbulb, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import { createGeminiChatSession, fetchChatHistory } from '@/services/GeminiChatService';
+import { createGeminiChatSession, fetchChatHistory, fetchAIUsageStatus, AIUsageStatus } from '@/services/GeminiChatService';
 import { ThinkingModel } from '@/components/common/ThinkingModel';
 import { useHealthStore } from '@/store/healthStore';
 import ReactMarkdown from 'react-markdown';
@@ -99,14 +99,70 @@ const ChatBot: React.FC<ChatBotProps> = ({ useGemini: initialUseGemini, geminiTi
   const [pendingModeSwitch, setPendingModeSwitch] = useState<'chat' | 'symptom-checker' | null>(null);
   const [showModelSwitchDialog, setShowModelSwitchDialog] = useState(false);
 
-  // Free trial message tracking
-  const FREE_TRIAL_LIMIT = 2;
-  const FREE_TRIAL_KEY = 'medibridge_free_ai_messages';
-  const [freeMessagesUsed, setFreeMessagesUsed] = useState<number>(() => {
-    return parseInt(localStorage.getItem(FREE_TRIAL_KEY) || '0', 10);
-  });
-  const freeTrialExhausted = !isPaidUser && freeMessagesUsed >= FREE_TRIAL_LIMIT;
-  const freeTrialRemaining = Math.max(0, FREE_TRIAL_LIMIT - freeMessagesUsed);
+  // ─── Server-side free message tracking ───────────────────────────────
+  const FREE_MESSAGE_LIMIT = 2;
+  const [usageStatus, setUsageStatus] = useState<AIUsageStatus | null>(null);
+  const [usageLoading, setUsageLoading] = useState(true);
+  const [timeUntilReset, setTimeUntilReset] = useState<string>('');
+
+  const freeTrialExhausted = !isPaidUser && (usageStatus?.isExhausted ?? false);
+  const freeTrialRemaining = usageStatus?.messagesRemaining ?? FREE_MESSAGE_LIMIT;
+  const freeMessagesUsed = usageStatus?.messagesUsed ?? 0;
+
+  // Fetch server-side usage on mount and after each message
+  const refreshUsageStatus = async () => {
+    if (isPaidUser) {
+      setUsageLoading(false);
+      return;
+    }
+    try {
+      const status = await fetchAIUsageStatus();
+      setUsageStatus(status);
+    } catch (err) {
+      console.error('Failed to fetch usage status:', err);
+    } finally {
+      setUsageLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refreshUsageStatus();
+  }, [isPaidUser]);
+
+  // Live countdown timer when free trial is exhausted
+  useEffect(() => {
+    if (!freeTrialExhausted || !usageStatus?.nextResetDate) return;
+
+    const updateTimer = () => {
+      const now = new Date().getTime();
+      const resetTime = new Date(usageStatus.nextResetDate!).getTime();
+      const diff = resetTime - now;
+
+      if (diff <= 0) {
+        setTimeUntilReset('Resetting...');
+        // Auto-refresh usage when the window expires
+        refreshUsageStatus();
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      if (days > 0) {
+        setTimeUntilReset(`${days}d ${hours}h ${minutes}m`);
+      } else if (hours > 0) {
+        setTimeUntilReset(`${hours}h ${minutes}m ${seconds}s`);
+      } else {
+        setTimeUntilReset(`${minutes}m ${seconds}s`);
+      }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [freeTrialExhausted, usageStatus?.nextResetDate]);
 
   useEffect(() => {
     // Enable Gemini for paid users OR for free users who still have trial messages left
@@ -396,13 +452,9 @@ Click the "Upgrade" button below to access premium features.`;
         await processStream(stream);
       }
 
-      // Only count a free message if a REAL AI response was delivered (not the upgrade fallback)
-      if (!isPaidUser && useGemini && geminiApiKey && !freeTrialExhausted) {
-        setFreeMessagesUsed(prev => {
-          const next = prev + 1;
-          localStorage.setItem(FREE_TRIAL_KEY, String(next));
-          return next;
-        });
+      // After a successful AI message, refresh usage from server
+      if (!isPaidUser) {
+        await refreshUsageStatus();
       }
     } catch (error) {
       console.error('Error generating response:', error);
@@ -763,26 +815,47 @@ Click the "Upgrade" button below to access premium features.`;
           )}
         </form>
 
-        {!isPaidUser && (
+        {!isPaidUser && !usageLoading && (
           <div className="px-4 pb-2">
-            {freeTrialExhausted ? (
-              <div className="flex items-center gap-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
-                <Sparkles className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
-                <p className="text-xs text-amber-800 flex-1">
-                  You've used all <strong>{FREE_TRIAL_LIMIT} free messages</strong>. Upgrade to keep chatting.
+            {freeTrialExhausted && usageStatus?.nextResetDate ? (
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg space-y-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-amber-600 flex-shrink-0" />
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                    Free messages used up
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span>
+                    Resets in <strong>{timeUntilReset}</strong>
+                  </span>
+                </div>
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  Next reset: {new Date(usageStatus.nextResetDate).toLocaleDateString('en-IN', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Don't want to wait? Upgrade for unlimited messages.
                 </p>
               </div>
             ) : (
               <div className="flex items-center gap-2">
                 <div className="flex gap-0.5">
-                  {Array.from({ length: FREE_TRIAL_LIMIT }).map((_, i) => (
+                  {Array.from({ length: FREE_MESSAGE_LIMIT }).map((_, i) => (
                     <div key={i} className={`h-1.5 w-6 rounded-full transition-colors ${
                       i < freeMessagesUsed ? 'bg-amber-500' : 'bg-muted'
                     }`} />
                   ))}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {freeTrialRemaining} free {freeTrialRemaining === 1 ? 'message' : 'messages'} remaining
+                  {freeTrialRemaining} free {freeTrialRemaining === 1 ? 'message' : 'messages'} remaining (resets every 15 days)
                 </p>
               </div>
             )}

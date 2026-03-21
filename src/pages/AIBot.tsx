@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ChatBot from '@/components/ChatBot';
 import Navbar from '@/components/Navbar';
-import { Bot, MessageSquare, Crown, Info, Shield, Brain, Clock, User, AlertTriangle, Settings, LogIn, Sparkles } from 'lucide-react';
+import { Bot, MessageSquare, Crown, Info, Shield, Brain, Clock, User, AlertTriangle, Settings, LogIn } from 'lucide-react';
 import GeminiApiKeyManager from '@/components/common/GeminiApiKeyManager';
 import ModelSelector from '@/components/common/ModelSelector';
 import { useHealthStore } from '@/store/healthStore';
@@ -20,18 +20,12 @@ const AIBot = () => {
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
   const isThinkingModel = geminiModel.includes("thinking");
-  const isGemini25Pro = false;
   const isFreeUser = geminiTier === 'free';
   const isPaidUser = geminiTier === 'lite' || geminiTier === 'pro';
   const navigate = useNavigate();
 
-  // Check if free trial is exhausted (same key as ChatBot uses)
-  const FREE_TRIAL_LIMIT = 2;
-  const FREE_TRIAL_KEY = 'medibridge_free_ai_messages';
-  const [freeMessagesUsed, setFreeMessagesUsed] = useState(() =>
-    parseInt(localStorage.getItem(FREE_TRIAL_KEY) || '0', 10)
-  );
-  const freeTrialExhausted = isFreeUser && freeMessagesUsed >= FREE_TRIAL_LIMIT;
+  // Server-side free trial tracking
+  const [freeTrialExhausted, setFreeTrialExhausted] = useState(false);
 
   // useAI: true for paid users OR for free users who still have trial messages
   const [useAI, setUseAI] = useState(!!geminiApiKey && (isPaidUser || !freeTrialExhausted));
@@ -40,6 +34,24 @@ const AIBot = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return localStorage.getItem('isAuthenticated') === 'true';
   });
+
+  // Fetch server-side usage status for free users
+  useEffect(() => {
+    const checkUsage = async () => {
+      if (isPaidUser) {
+        setFreeTrialExhausted(false);
+        return;
+      }
+      try {
+        const { fetchAIUsageStatus } = await import('@/services/GeminiChatService');
+        const status = await fetchAIUsageStatus();
+        setFreeTrialExhausted(status.isExhausted);
+      } catch {
+        setFreeTrialExhausted(false);
+      }
+    };
+    checkUsage();
+  }, [isPaidUser, geminiTier]);
   
   // Refresh useAI state when API key or tier changes
   useEffect(() => {
@@ -49,10 +61,9 @@ const AIBot = () => {
   useEffect(() => {
     const handleTierChanged = (event: CustomEvent) => {
       const { tier } = event.detail;
-      const currentTrialExhausted = parseInt(localStorage.getItem(FREE_TRIAL_KEY) || '0', 10) >= FREE_TRIAL_LIMIT;
       if (tier && (tier === 'lite' || tier === 'pro')) {
         setUseAI(true);
-      } else if (tier === 'free' && !currentTrialExhausted) {
+      } else if (tier === 'free' && !freeTrialExhausted) {
         // Free user still has trial messages — keep AI enabled
         setUseAI(true);
       } else {
@@ -391,25 +402,18 @@ const AIBot = () => {
             <Card className="border-health-lavender/20 h-[600px] flex flex-col">
               <CardHeader className="pb-3 flex-shrink-0 flex flex-row justify-between items-center">
                 <CardTitle className="text-xl flex items-center gap-2">
-                  {isGemini25Pro ? (
-                    <Sparkles className="h-5 w-5 text-amber-600" />
-                  ) : isThinkingModel ? (
+                  {isThinkingModel ? (
                     <Brain className="h-5 w-5 text-purple-500" />
                   ) : (
                     <Bot className="h-5 w-5 text-health-lavender" />
                   )}
-                  {isPaidUser ? 'MediBridge AI Assistant' : 'MediBridge AI Assistant'}
+                  MediBridge AI Assistant
                   {isPaidUser && (
                     <>
                       <span className="ml-2 text-xs bg-health-lavender/10 text-health-lavender py-1 px-2 rounded-full">
                         Powered by Google Gemini
                       </span>
-                      {isGemini25Pro && (
-                        <span className="ml-2 text-xs bg-amber-100 text-amber-700 py-1 px-2 rounded-full flex items-center gap-1">
-                          <Sparkles className="h-3 w-3" /> Gemini 2.5 Pro
-                        </span>
-                      )}
-                      {isThinkingModel && !isGemini25Pro && (
+                      {isThinkingModel && (
                         <span className="ml-2 text-xs bg-purple-100 text-purple-700 py-1 px-2 rounded-full flex items-center gap-1">
                           <Brain className="h-3 w-3" /> Thinking
                         </span>
