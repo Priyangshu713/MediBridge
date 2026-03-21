@@ -107,10 +107,15 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ isOpen, onClose }) =>
                     }
 
                     // If backend downgraded to free, update local tier
-                    if (response.tier && response.tier !== profileData?.tier) {
-                        setProfileData(prev => prev ? { ...prev, tier: response.tier as 'free' | 'lite' | 'pro' } : prev);
-                        localStorage.setItem('geminiTier', response.tier);
-                        window.dispatchEvent(new CustomEvent('geminiTierChanged', { detail: { tier: response.tier } }));
+                    if (response.tier) {
+                        setProfileData(prev => {
+                            if (prev && response.tier !== prev.tier) {
+                                localStorage.setItem('geminiTier', response.tier as string);
+                                window.dispatchEvent(new CustomEvent('geminiTierChanged', { detail: { tier: response.tier } }));
+                                return { ...prev, tier: response.tier as 'free' | 'lite' | 'pro' };
+                            }
+                            return prev;
+                        });
                         
                         // If there is no active subscription, clear billingCycle and trialEndDate
                         if (!response.subscription) {
@@ -126,7 +131,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ isOpen, onClose }) =>
             setCancelPassword('');
             setCancelError('');
         }
-    }, [showPaymentDetails, profileData]);
+    }, [showPaymentDetails]);
 
     const fetchProfileData = async () => {
         setIsLoading(true);
@@ -161,11 +166,13 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ isOpen, onClose }) =>
         try {
             const localTier = localStorage.getItem('geminiTier');
             if (localTier) {
-                await synchronizeTier();
-                toast({
-                    title: 'Tier Synchronized',
-                    description: `Your ${localTier.charAt(0).toUpperCase() + localTier.slice(1)} tier has been synchronized with the server.`,
-                });
+                const serverTier = await synchronizeTier();
+                if (serverTier !== localTier) {
+                    toast({
+                        title: 'Tier Synchronized',
+                        description: `Your tier has been updated to ${serverTier.charAt(0).toUpperCase() + serverTier.slice(1)}.`,
+                    });
+                }
             }
         } catch {
             // Don't show error toast here to not interrupt the user experience

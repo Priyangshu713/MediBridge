@@ -599,6 +599,9 @@ declare global {
 // Load Razorpay script
 const loadRazorpayScript = () => {
     return new Promise((resolve) => {
+        if (document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]')) {
+            return resolve(true);
+        }
         const script = document.createElement('script');
         script.src = 'https://checkout.razorpay.com/v1/checkout.js';
         script.onload = () => resolve(true);
@@ -620,7 +623,7 @@ export const initiatePayment = async (amount: number, duration: string, plan: st
 
     let isDuration: number = 0;
     if (!duration) {
-        isDuration = 1; // Default to 1 month if duration is not provided
+        isDuration = 30; // Default to 1 month if duration is not provided
     } else if (duration === 'yearly') {
         isDuration = 365; // Set to 12 months for yearly subscription
     } else if (duration === 'monthly') {
@@ -631,6 +634,8 @@ export const initiatePayment = async (amount: number, duration: string, plan: st
         isDuration = 90; // Set to 3 months for 3 months subscription
     } else if (duration === '6months' || duration === 'sixMonths') {
         isDuration = 180; // Set to 6 months for 6 months subscription
+    } else {
+        isDuration = 30; // Fallback to prevent zero-duration subscriptions
     }
 
     try {
@@ -754,10 +759,12 @@ export const initiatePayment = async (amount: number, duration: string, plan: st
             razorpay.open();
         } catch (e) {
             console.error("Razorpay widget failed to open:", e);
+            throw new Error('Payment gateway failed to initialize. Please try again or contact support.');
         }
 
     } catch (error) {
         console.error('Error initiating payment:', error);
+        throw error;
     }
 };
 /**
@@ -866,28 +873,7 @@ export const getSubscriptionStatus = async () => {
     }
 };
 
-/**
- * Get subscription details
- * @returns {Promise<Object>} Subscription details
- */
-export const getSubscriptionDetails = async () => {
-    const response = await fetch(`${API_URL}/auth/subscription`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-            ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
-        },
-    });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch subscription details');
-    }
-
-    return data;
-};
 
 /**
  * Login or Register user via Google OAuth
